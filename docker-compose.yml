@@ -1,0 +1,82 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    ports:
+      - "${MYSQL_PORT}:3306"
+    volumes:
+      # - db:/var/lib/mysql.
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - bgp_net
+
+  backend:
+    image: node:20-alpine
+    container_name: bgp_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      FRONT_PORT: ${FRONT_PORT}
+      API_PORT: ${API_PORT}
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      FASTIFY_SECRET: ${FASTIFY_SECRET}
+    working_dir: /app
+    command: sh -c "npm install && npm run local"
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    volumes:
+      - ./api:/app
+      - /app/node_modules
+    networks:
+      - bgp_net
+
+  frontend:
+    image: node:20-alpine
+    container_name: bgp_frontend
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    depends_on:
+      - backend
+    ports:
+      - "${FRONT_PORT}:4200"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - bgp_net
+
+volumes:
+  bgp_db_data:
+
+networks:
+  bgp_net:
+    driver: bridge
