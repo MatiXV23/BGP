@@ -55,6 +55,7 @@ CREATE TABLE comisaria (
 CREATE TABLE agente_policial (
     cedula_identidad    CHAR(8)        PRIMARY KEY,
     id_comisaria        INT            NOT NULL,
+    CONSTRAINT fk_agente_ciudadano FOREIGN KEY (cedula_identidad) REFERENCES ciudadano(cedula_identidad),
     CONSTRAINT fk_agente_com FOREIGN KEY (id_comisaria) REFERENCES comisaria(id_comisaria)
 );
 
@@ -66,6 +67,7 @@ CREATE TABLE organismo_estado (
 CREATE TABLE miembro_mesa (
     cedula_identidad    CHAR(8)        PRIMARY KEY,
     id_organismo        INT            NOT NULL,
+    CONSTRAINT fk_mm_ciudadano FOREIGN KEY (cedula_identidad) REFERENCES ciudadano(cedula_identidad),
     CONSTRAINT fk_mm_org FOREIGN KEY (id_organismo) REFERENCES organismo_estado(id_organismo)
 );
 
@@ -91,12 +93,15 @@ CREATE TABLE mesa (
     ci_presidente       CHAR(8)        NOT NULL,
     ci_secretario       CHAR(8)        NOT NULL,
     ci_vocal            CHAR(8)        NOT NULL,
+    estado              ENUM('Abierta','Cerrada') NOT NULL DEFAULT 'Abierta',
+    fecha_hora_cierre   DATETIME       NULL,
     CONSTRAINT fk_mesa_circ  FOREIGN KEY (id_circuito)    REFERENCES circuito(id_circuito),
     CONSTRAINT fk_mesa_pres  FOREIGN KEY (ci_presidente)  REFERENCES miembro_mesa(cedula_identidad),
     CONSTRAINT fk_mesa_sec   FOREIGN KEY (ci_secretario)  REFERENCES miembro_mesa(cedula_identidad),
     CONSTRAINT fk_mesa_vocal FOREIGN KEY (ci_vocal)       REFERENCES miembro_mesa(cedula_identidad),
     CONSTRAINT fk_mesa_elec FOREIGN KEY (id_eleccion) REFERENCES eleccion(id_eleccion),
-    CONSTRAINT uq_mesa_circ_elec UNIQUE (id_circuito, id_eleccion)
+    CONSTRAINT uq_mesa_circ_elec UNIQUE (id_circuito, id_eleccion),
+    CONSTRAINT chk_fecha_cierre_estado CHECK ((estado = 'Abierta' AND fecha_hora_cierre IS NULL) OR (estado = 'Cerrada' AND fecha_hora_cierre IS NOT NULL))
 );
 
 CREATE TABLE asignacion_policial (
@@ -121,6 +126,7 @@ CREATE TABLE autoridad_partido (
     cedula_identidad    CHAR(8)        NOT NULL,
     rol                 ENUM('Presidente','Vicepresidente') NOT NULL,
     CONSTRAINT fk_aut_partido FOREIGN KEY (id_partido) REFERENCES partido_politico(id_partido),
+    CONSTRAINT fk_aut_ciudadano FOREIGN KEY (cedula_identidad) REFERENCES ciudadano(cedula_identidad),
     CONSTRAINT uq_partido_rol UNIQUE (id_partido, rol)
 );
 
@@ -207,35 +213,125 @@ CREATE INDEX idx_part_eleccion     ON participacion_votante(id_eleccion);
 CREATE INDEX idx_papeleta_eleccion ON papeleta(id_eleccion);
 CREATE INDEX idx_papeleta_partido  ON papeleta(id_partido);
 CREATE INDEX idx_lista_candidato   ON lista_integrante(cedula_candidato);
+CREATE INDEX idx_voto_estado ON voto(estado);
+CREATE INDEX idx_voto_observado ON voto(es_observado);
+CREATE INDEX idx_voto_eleccion_circuito ON voto(id_eleccion, id_circuito);
+CREATE INDEX idx_voto_papeleta_papeleta ON voto_papeleta(id_papeleta);
+CREATE INDEX idx_participacion_credencial_eleccion ON participacion_votante(credencial_civica, id_eleccion);
+CREATE INDEX idx_circuito_credencial_credencial ON circuito_credencial(credencial_civica);
 
-CREATE VIEW v_resultados_eleccion AS
+CREATE OR REPLACE VIEW v_resultados_eleccion AS
 SELECT
     e.id_eleccion,
     e.fecha,
-    te.nombre                          AS tipo_eleccion,
+    te.nombre AS tipo_eleccion,
+
     p.id_papeleta,
     p.numero_lista,
-    p.descripcion                      AS papeleta,
-    pp.nombre                          AS partido,
-    COUNT(vp.id_voto)                  AS votos_obtenidos
-FROM eleccion        e
-JOIN tipo_eleccion   te ON te.id_tipo      = e.id_tipo
-JOIN papeleta        p  ON p.id_eleccion   = e.id_eleccion
-LEFT JOIN partido_politico pp ON pp.id_partido = p.id_partido
-LEFT JOIN voto_papeleta vp    ON vp.id_papeleta = p.id_papeleta
-LEFT JOIN voto          v     ON v.id_voto      = vp.id_voto
-                              AND v.estado = 'Valido'
-GROUP BY e.id_eleccion, p.id_papeleta;
+    p.descripcion AS papeleta,
+    pp.nombre AS partido,
 
-CREATE VIEW v_participacion_circuito AS
-SELECT
-    c.id_circuito,
-    c.numero,
-    c.localidad,
+    COUNT(DISTINCT v.id_voto) AS votos_emitidos,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.estado = 'Valido' THEN v.id_voto 
+    END) AS votos_validos,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.estado = 'Anulado' THEN v.id_voto 
+    END) AS votos_anulados,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.estado = 'Blanco' THEN v.id_voto 
+    END) AS votos_blancos,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.es_observado = TRUE THEN v.id_voto 
+    END) AS votos_observados
+
+FROM eleccion e
+JOIN tipo_eleccion te 
+    ON te.id_tipo = e.id_tipo
+JOIN papeleta p  
+    ON p.id_eleccion = e.id_eleccion
+LEFT JOIN partido_politico pp 
+    ON pp.id_partido = p.id_partido
+LEFT JOIN voto_papeleta vp    
+    ON vp.id_papeleta = p.id_papeleta
+LEFT JOIN voto v     
+    ON v.id_voto = vp.id_voto
+GROUP BY
     e.id_eleccion,
     e.fecha,
-    COUNT(pv.id_participacion) AS total_votantes
-FROM circuito              c
-JOIN participacion_votante pv ON pv.id_circuito = c.id_circuito
-JOIN eleccion              e  ON e.id_eleccion        = pv.id_eleccion
-GROUP BY c.id_circuito, e.id_eleccion;
+    te.nombre,
+    p.id_papeleta,
+    p.numero_lista,
+    p.descripcion,
+    pp.nombre;
+
+CREATE VIEW v_votos_por_departamento AS
+SELECT
+    e.id_eleccion,
+    e.fecha,
+    d.id_departamento,
+    d.nombre AS departamento,
+
+    COUNT(v.id_voto) AS votos_emitidos,
+
+    SUM(CASE WHEN v.estado = 'Valido' THEN 1 ELSE 0 END) AS votos_validos,
+    SUM(CASE WHEN v.estado = 'Anulado' THEN 1 ELSE 0 END) AS votos_anulados,
+    SUM(CASE WHEN v.estado = 'Blanco' THEN 1 ELSE 0 END) AS votos_blancos,
+    SUM(CASE WHEN v.es_observado = TRUE THEN 1 ELSE 0 END) AS votos_observados
+
+FROM voto v
+JOIN eleccion e 
+    ON e.id_eleccion = v.id_eleccion
+JOIN circuito c 
+    ON c.id_circuito = v.id_circuito
+JOIN departamento d 
+    ON d.id_departamento = c.id_departamento
+GROUP BY
+    e.id_eleccion,
+    e.fecha,
+    d.id_departamento,
+    d.nombre;
+
+CREATE VIEW v_votos_por_partido AS
+SELECT
+    e.id_eleccion,
+    e.fecha,
+    pp.id_partido,
+    pp.nombre AS partido,
+
+    COUNT(DISTINCT v.id_voto) AS votos_emitidos,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.estado = 'Valido' THEN v.id_voto 
+    END) AS votos_validos,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.estado = 'Anulado' THEN v.id_voto 
+    END) AS votos_anulados,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.estado = 'Blanco' THEN v.id_voto 
+    END) AS votos_blancos,
+
+    COUNT(DISTINCT CASE 
+        WHEN v.es_observado = TRUE THEN v.id_voto 
+    END) AS votos_observados
+
+FROM partido_politico pp
+JOIN papeleta p 
+    ON p.id_partido = pp.id_partido
+JOIN eleccion e 
+    ON e.id_eleccion = p.id_eleccion
+LEFT JOIN voto_papeleta vp 
+    ON vp.id_papeleta = p.id_papeleta
+LEFT JOIN voto v 
+    ON v.id_voto = vp.id_voto
+GROUP BY
+    e.id_eleccion,
+    e.fecha,
+    pp.id_partido,
+    pp.nombre;

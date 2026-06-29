@@ -196,6 +196,15 @@ INSERT INTO mesa (id_circuito, id_eleccion, ci_presidente, ci_secretario, ci_voc
   (8,  4, '01234567', '12345678', '23456789');
 
 -- ------------------------------------------------------------
+-- Para cerrar una mesa y cambiar su estado
+--  UPDATE mesa
+-- SET estado = 'Cerrada',
+--    fecha_hora_cierre = NOW()
+-- WHERE id_mesa = 1
+--  AND estado = 'Abierta';
+-- ------------------------------------------------------------
+
+-- ------------------------------------------------------------
 -- asignacion_policial
 -- ------------------------------------------------------------
 INSERT INTO asignacion_policial (cedula_agente, id_establecimiento, id_eleccion) VALUES
