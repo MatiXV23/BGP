@@ -6,7 +6,6 @@ import { firstValueFrom } from 'rxjs';
 import { Usuario } from '../types/usuario';
 import { environment } from '../../environments/environment';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -16,7 +15,7 @@ export class AuthService {
 
   async logIn(credenciales: Credenciales) {
     const { token } = await firstValueFrom(
-      this.httpClient.post<{ token: string }>(environment.apiUrl + '/auth', credenciales)
+      this.httpClient.post<{ token: string }>(environment.apiUrl + '/auth', credenciales),
     );
 
     localStorage.setItem('token', token);
