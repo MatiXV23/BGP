@@ -1,0 +1,111 @@
+<div class="content">
+  <div class="departamentos-header">
+    <div>
+      <div class="section-title">Departamentos</div>
+      <div class="section-sub">Gestión territorial de los departamentos del país</div>
+    </div>
+
+    <button class="btn btn-primary" (click)="alternarFormulario()">Nuevo departamento</button>
+  </div>
+
+  @if (mostrarFormulario) {
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Alta de departamento</div>
+          <div class="section-sub">
+            Formulario preparado para conectar luego con la base de datos
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span>Nombre del departamento</span>
+          <input type="text" placeholder="Ej: Salto" />
+        </label>
+
+        <label class="form-field">
+          <span>Código interno</span>
+          <input type="text" placeholder="Ej: 15" />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Guardar departamento</button>
+        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Listado de departamentos</div>
+        <div class="section-sub">
+          Esta sección luego consumirá el servicio de departamentos del backend
+        </div>
+      </div>
+
+      <span class="field-tag">Pendiente de conexión</span>
+    </div>
+
+    <div class="filters-row">
+      <label class="form-field">
+        <span>Buscar</span>
+        <input type="text" placeholder="Buscar por nombre o código" />
+      </label>
+
+      <button class="btn">Filtrar</button>
+    </div>
+
+    <div class="empty-state">
+      Todavía no se están cargando departamentos desde la base de datos. Esta tabla quedará
+      conectada al servicio correspondiente más adelante.
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Circuitos del departamento</div>
+          <div class="section-sub">
+            Circuitos electorales asociados al departamento seleccionado
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state">
+        Esta sección se conectará con los circuitos asociados al departamento.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Establecimientos del departamento</div>
+          <div class="section-sub">Locales de votación ubicados dentro del departamento</div>
+        </div>
+      </div>
+
+      <div class="empty-state">
+        Esta sección se conectará con los establecimientos asociados al departamento.
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Resultados por departamento</div>
+        <div class="section-sub">Espacio preparado para consultar resultados territoriales</div>
+      </div>
+    </div>
+
+    <div class="empty-state">
+      Esta sección podrá usar la vista de resultados por departamento cuando el backend esté
+      conectado.
+    </div>
+  </div>
+</div>

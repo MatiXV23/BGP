@@ -1,0 +1,149 @@
+<div class="content">
+  <div class="reportes-header">
+    <div>
+      <div class="section-title">Reportes</div>
+      <div class="section-sub">Consulta y generación de informes del proceso electoral</div>
+    </div>
+
+    <span class="field-tag">Pendiente de conexión</span>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Filtros del reporte</div>
+        <div class="section-sub">
+          Seleccioná los criterios para consultar la información electoral
+        </div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <label class="form-field">
+        <span>Elección</span>
+        <select>
+          <option value="">Seleccionar elección</option>
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>Departamento</span>
+        <select>
+          <option value="">Todos los departamentos</option>
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>Tipo de reporte</span>
+        <select>
+          <option value="">Seleccionar tipo</option>
+          <option value="departamento">Votos por departamento</option>
+          <option value="partido">Votos por partido</option>
+          <option value="papeleta">Votos por papeleta</option>
+          <option value="participacion">Participación electoral</option>
+          <option value="observados">Votos observados</option>
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>Estado del voto</span>
+        <select>
+          <option value="">Todos</option>
+          <option value="valido">Válidos</option>
+          <option value="anulado">Anulados</option>
+          <option value="blanco">Blancos</option>
+          <option value="observado">Observados</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" (click)="generarReporte()">Generar reporte</button>
+
+      <button class="btn" (click)="limpiarReporte()">Limpiar</button>
+    </div>
+  </div>
+
+  @if (!reporteGenerado) {
+    <div class="card">
+      <div class="empty-state">
+        Seleccioná los filtros y generá un reporte. Los datos se cargarán desde el backend cuando se
+        conecten los servicios correspondientes.
+      </div>
+    </div>
+  }
+
+  @if (reporteGenerado) {
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total de votos</div>
+        <div class="stat-value">—</div>
+        <div class="stat-detail">Pendiente de backend</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Votos válidos</div>
+        <div class="stat-value">—</div>
+        <div class="stat-detail">Pendiente de backend</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Votos observados</div>
+        <div class="stat-value">—</div>
+        <div class="stat-detail">Pendiente de backend</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Participación</div>
+        <div class="stat-value">—</div>
+        <div class="stat-detail">Pendiente de backend</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Reporte por departamento</div>
+            <div class="section-sub">Preparado para usar la vista de votos por departamento</div>
+          </div>
+        </div>
+
+        <div class="empty-state">Acá se mostrarán los votos agrupados por departamento.</div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Reporte por partido</div>
+            <div class="section-sub">Preparado para usar la vista de votos por partido</div>
+          </div>
+        </div>
+
+        <div class="empty-state">Acá se mostrarán los votos agrupados por partido político.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Detalle del reporte</div>
+          <div class="section-sub">
+            Tabla preparada para mostrar resultados detallados de la consulta
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button class="btn">Exportar PDF</button>
+          <button class="btn">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="empty-state">
+        El detalle del reporte se cargará desde la base de datos. Esta sección podrá mostrar
+        columnas como departamento, partido, papeleta, votos válidos, anulados, blancos y
+        observados.
+      </div>
+    </div>
+  }
+</div>

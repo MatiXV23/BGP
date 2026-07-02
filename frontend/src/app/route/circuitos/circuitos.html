@@ -1,0 +1,120 @@
+<div class="content">
+  <div class="circuitos-header">
+    <div>
+      <div class="section-title">Circuitos</div>
+      <div class="section-sub">Gestión de circuitos electorales y su información territorial</div>
+    </div>
+
+    <button class="btn btn-primary" (click)="alternarFormulario()">Nuevo circuito</button>
+  </div>
+
+  @if (mostrarFormulario) {
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Alta de circuito</div>
+          <div class="section-sub">
+            Formulario preparado para conectar luego con la base de datos
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span>Número de circuito</span>
+          <input type="text" placeholder="Ej: 0101" />
+        </label>
+
+        <label class="form-field">
+          <span>Departamento</span>
+          <input type="text" placeholder="Seleccionar departamento" />
+        </label>
+
+        <label class="form-field">
+          <span>Establecimiento</span>
+          <input type="text" placeholder="Seleccionar establecimiento" />
+        </label>
+
+        <label class="form-field">
+          <span>Localidad</span>
+          <input type="text" placeholder="Ciudad, pueblo o paraje" />
+        </label>
+
+        <label class="form-field">
+          <span>Barrio o zona</span>
+          <input type="text" placeholder="Ej: Centro, Palermo, Zona Norte" />
+        </label>
+
+        <label class="form-field">
+          <span>Accesibilidad</span>
+          <select>
+            <option value="">Seleccionar</option>
+            <option value="true">Accesible</option>
+            <option value="false">No accesible</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Guardar circuito</button>
+        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Listado de circuitos</div>
+        <div class="section-sub">
+          Esta sección luego consumirá el servicio de circuitos del backend
+        </div>
+      </div>
+
+      <span class="field-tag">Pendiente de conexión</span>
+    </div>
+
+    <div class="filters-row">
+      <label class="form-field">
+        <span>Buscar</span>
+        <input type="text" placeholder="Buscar por número, localidad o establecimiento" />
+      </label>
+
+      <label class="form-field">
+        <span>Departamento</span>
+        <input type="text" placeholder="Filtrar por departamento" />
+      </label>
+
+      <button class="btn">Filtrar</button>
+    </div>
+
+    <div class="empty-state">
+      Todavía no se están cargando circuitos desde la base de datos. Esta tabla quedará conectada al
+      servicio correspondiente más adelante.
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Credenciales habilitadas</div>
+          <div class="section-sub">Relación entre circuito y credenciales autorizadas</div>
+        </div>
+      </div>
+
+      <div class="empty-state">Esta sección se conectará con la tabla circuito_credencial.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Mesa asociada</div>
+          <div class="section-sub">Mesa electoral definida por circuito y elección</div>
+        </div>
+      </div>
+
+      <div class="empty-state">Esta sección se conectará con la tabla mesa.</div>
+    </div>
+  </div>
+</div>
