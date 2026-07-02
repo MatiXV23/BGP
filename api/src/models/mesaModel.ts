@@ -86,3 +86,32 @@ export const mesaActualModel = Type.Object({
   papeletas: Type.Array(papeletaResultadoModel),
 });
 export type MesaActual = Static<typeof mesaActualModel>;
+
+// La credencial nunca viaja en el body: siempre es la del usuario autenticado (req.user),
+// así se garantiza que nadie pueda votar en nombre de otro ciudadano.
+export const verificarVotanteBodyModel = Type.Object({
+  numero_circuito_ingresado: Type.String({ minLength: 1, maxLength: 20 }),
+});
+export type VerificarVotanteBody = Static<typeof verificarVotanteBodyModel>;
+
+export const verificarVotanteResponseModel = Type.Object({
+  nombre_completo: Type.String(),
+  ya_voto: Type.Boolean(),
+  observado: Type.Boolean(),
+});
+export type VerificarVotanteResponse = Static<typeof verificarVotanteResponseModel>;
+
+export const emitirVotoBodyModel = Type.Object({
+  numero_circuito_ingresado: Type.String({ minLength: 1, maxLength: 20 }),
+  id_papeletas: Type.Array(Type.Integer()),
+});
+export type EmitirVotoBody = Static<typeof emitirVotoBodyModel>;
+
+export const VotoEmitidoEstadoEnum = Type.Union([Type.Literal("Valido"), Type.Literal("Blanco")]);
+
+export const emitirVotoResponseModel = Type.Object({
+  id_voto: Type.Integer(),
+  estado: VotoEmitidoEstadoEnum,
+  observado: Type.Boolean(),
+});
+export type EmitirVotoResponse = Static<typeof emitirVotoResponseModel>;

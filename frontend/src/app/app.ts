@@ -29,9 +29,24 @@ export class App {
       .join('');
   });
 
-  constructor() {
-    this.authService.checkLocalStorage();
+  protected readonly rolEnMesa = computed(() => {
+    const user = this.mainStore.user();
+    const mesa = this.mesaContext.mesa();
+    if (!user || !mesa) return undefined;
 
+    if (mesa.presidente.cedula_identidad === user.cedula_identidad) return 'Presidente/a de mesa';
+    if (mesa.secretario.cedula_identidad === user.cedula_identidad) return 'Secretario/a de mesa';
+    if (mesa.vocal.cedula_identidad === user.cedula_identidad) return 'Vocal de mesa';
+    return undefined;
+  });
+
+  protected readonly mostrarPerfil = signal(false);
+
+  togglePerfil(): void {
+    this.mostrarPerfil.update((valor) => !valor);
+  }
+
+  constructor() {
     effect(() => {
       if (this.mainStore.token()) {
         this.mesaContext.refresh();

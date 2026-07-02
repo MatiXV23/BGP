@@ -65,9 +65,13 @@ body {
 .app {
   display: grid;
   grid-template-columns: 220px 1fr;
-  min-height: 820px;
+  min-height: 100vh;
   border: 0.5px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
   background: var(--bg0);
+}
+@media (max-width: 700px) {
+  .app {
+    grid-template-columns: 1fr;
+  }
 }

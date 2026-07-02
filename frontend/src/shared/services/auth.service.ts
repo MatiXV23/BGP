@@ -12,6 +12,7 @@ import { environment } from '../../environments/environment';
 export class AuthService {
   private httpClient = inject(HttpClient);
   private mainStore = inject(MainStore);
+  private checkLocalStoragePromise: Promise<void> | null = null;
 
   async logIn(credenciales: Credenciales) {
     const { token } = await firstValueFrom(
@@ -30,7 +31,22 @@ export class AuthService {
     localStorage.removeItem('token');
   }
 
-  async checkLocalStorage() {
+  // Coalesceado: si dos guards (o un guard y el App root) llaman a esto casi al mismo
+  // tiempo, el segundo espera la MISMA promesa en vez de correr en paralelo. Sin esto,
+  // el segundo llamador podía ver el token ya seteado por el primero y devolver antes
+  // de que el usuario terminara de resolverse, dejando la guard con isLogged() en falso.
+  async checkLocalStorage(): Promise<void> {
+    if (this.checkLocalStoragePromise) return this.checkLocalStoragePromise;
+
+    this.checkLocalStoragePromise = this.doCheckLocalStorage();
+    try {
+      await this.checkLocalStoragePromise;
+    } finally {
+      this.checkLocalStoragePromise = null;
+    }
+  }
+
+  private async doCheckLocalStorage(): Promise<void> {
     if (!this.mainStore.token() && localStorage.getItem('token')) {
       this.mainStore.token.set(localStorage.getItem('token')!);
       if (!this.mainStore.user()) {

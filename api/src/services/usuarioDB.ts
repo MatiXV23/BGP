@@ -5,7 +5,7 @@ import type { Usuario, UsuarioPost, JWTUsuario } from "../models/usuarioModel.js
 import { PC_NotFound, PC_BadRequest, PC_NoAuthorized, PC_InternalServerError } from "../errors/errors.js";
 
 const SELECT_USUARIO = `
-  SELECT u.id_usuario, u.cedula_identidad, u.is_admin, c.nombre_completo
+  SELECT u.id_usuario, u.cedula_identidad, u.is_admin, c.nombre_completo, c.credencial_civica
   FROM usuarios u
   JOIN ciudadano c ON c.cedula_identidad = u.cedula_identidad
 `;

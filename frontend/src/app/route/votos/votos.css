@@ -126,6 +126,11 @@
   border-color: var(--acc);
 }
 
+.form-field input:disabled {
+  color: var(--text2);
+  cursor: not-allowed;
+}
+
 .notice {
   margin-top: 12px;
   padding: 10px 12px;
@@ -144,10 +149,28 @@
   color: var(--acc-text);
 }
 
+.notice.danger {
+  background: var(--dan-bg);
+  color: var(--dan-text);
+}
+
+.notice.success {
+  background: var(--suc-bg);
+  color: var(--suc-text);
+}
+
 .paper-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.paper-list-disabled {
+  opacity: 0.5;
+}
+
+.paper-list-disabled .paper-option {
+  cursor: not-allowed;
 }
 
 .paper-option {

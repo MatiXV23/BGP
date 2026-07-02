@@ -3,6 +3,7 @@ export type Usuario = {
   cedula_identidad: string;
   is_admin: boolean;
   nombre_completo?: string;
+  credencial_civica?: string;
 };
 
 export type UsuarioPost = {

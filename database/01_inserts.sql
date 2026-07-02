@@ -471,10 +471,98 @@ INSERT INTO asignacion_policial (cedula_agente, id_establecimiento, id_eleccion)
   ('22334455', 1, 4);
 
 -- ------------------------------------------------------------
+-- Datos de demo para el circuito 0601 (Punta del Este, Maldonado)
+-- Ciudadanos nuevos: 5 votantes habilitados en el circuito + 2 agentes
+-- de seguridad para reforzar la Escuela N° 12 – Punta del Este.
+-- ------------------------------------------------------------
+INSERT INTO ciudadano (cedula_identidad, credencial_civica, nombre_completo, fecha_nacimiento) VALUES
+  ('13131313', 'AMA1313131', 'Rosario Núñez Bentancourt', '1983-04-11'),
+  ('14141414', 'AMB1414141', 'Federico Correa Sosa',      '1976-09-25'),
+  ('15151515', 'AMC1515151', 'Yamila Suárez Bello',       '1992-02-14'),
+  ('16161616', 'AMD1616161', 'Bruno Techera Larrosa',     '1988-07-30'),
+  ('17171717', 'AME1717171', 'Camila Rosso Miranda',      '1965-12-05'),
+  ('18181818', 'APE1818181', 'Ignacio Barreto Chagas',    '1984-03-19'),
+  ('19191919', 'APF1919191', 'Lucía Ortega Bianchi',      '1990-10-08');
+
+INSERT INTO circuito_credencial (id_circuito, credencial_civica) VALUES
+  -- Circuito 8 (Escuela N° 12, Punta del Este)
+  (8, 'AMA1313131'),
+  (8, 'AMB1414141'),
+  (8, 'AMC1515151'),
+  (8, 'AMD1616161'),
+  (8, 'AME1717171');
+
+-- ------------------------------------------------------------
+-- Más votantes de prueba para el circuito 0601 (Punta del Este). Son solo
+-- ciudadanos habilitados para votar: no son autoridad de mesa, no son
+-- agentes de seguridad, no tienen usuario/login y ninguno votó todavía.
+-- ------------------------------------------------------------
+INSERT INTO ciudadano (cedula_identidad, credencial_civica, nombre_completo, fecha_nacimiento) VALUES
+  ('20202020', 'AMF2020202', 'Valentina Duarte Bica',     '1979-08-02'),
+  ('24242424', 'AMG2424242', 'Nicolás Ferreira Chocho',   '1994-01-17'),
+  ('25252525', 'AMH2525252', 'Agustina Beltrán Machín',   '1987-06-23'),
+  ('26262626', 'AMI2626262', 'Maximiliano Sena Roldán',   '1991-11-09'),
+  ('27272727', 'AMJ2727272', 'Cecilia Píriz Aguirre',     '1968-03-28'),
+  ('28282828', 'AMK2828282', 'Diego Machado Olveira',     '1985-05-14'),
+  ('29292929', 'AML2929292', 'Florencia Recalde Bueno',   '1996-09-06'),
+  ('30303030', 'AMM3030303', 'Gonzalo Antúnez Ferrari',   '1973-12-21');
+
+INSERT INTO circuito_credencial (id_circuito, credencial_civica) VALUES
+  (8, 'AMF2020202'),
+  (8, 'AMG2424242'),
+  (8, 'AMH2525252'),
+  (8, 'AMI2626262'),
+  (8, 'AMJ2727272'),
+  (8, 'AMK2828282'),
+  (8, 'AML2929292'),
+  (8, 'AMM3030303');
+
+INSERT INTO agente_policial (cedula_identidad, id_comisaria) VALUES
+  ('18181818', 4), -- Comisaría Maldonado
+  ('19191919', 4); -- Comisaría Maldonado
+
+INSERT INTO asignacion_policial (cedula_agente, id_establecimiento, id_eleccion) VALUES
+  ('18181818', 6, 4),
+  ('19191919', 6, 4);
+
+-- Papeletas municipales propias de Maldonado (elección 4), no existían para ese departamento
+INSERT INTO papeleta (id_eleccion, numero_lista, es_lista, descripcion, color, id_partido, organo_candidatura, id_departamento) VALUES
+  (4, NULL, FALSE, 'Candidato Intendente FA – Maldonado',   'Rojo',     1, NULL,                  3), -- id_papeleta 23
+  (4, NULL, FALSE, 'Candidato Intendente PN – Maldonado',   'Blanco',   2, NULL,                  3), -- id_papeleta 24
+  (4, NULL, FALSE, 'Candidato Intendente PC – Maldonado',   'Colorado', 3, NULL,                  3), -- id_papeleta 25
+  (4, 7001, TRUE,  'Lista 7001 – FA Junta Dpto. Maldonado', 'Rojo',     1, 'Junta Departamental', 3), -- id_papeleta 26
+  (4, 7002, TRUE,  'Lista 7002 – PN Junta Dpto. Maldonado', 'Blanco',   2, 'Junta Departamental', 3); -- id_papeleta 27
+
+-- ------------------------------------------------------------
+-- Votación de la mesa 15 (circuito 8, elección 4 — Municipal)
+-- Mesa de circuito 8: presidente Andrés Pereyra Lima, secretaria Ana
+-- García Pérez, vocal Carlos Rodríguez Silva.
+-- 4 de los 13 votantes habilitados del circuito ya concurrieron; el resto
+-- (AME1717171 y los 8 agregados más abajo) quedan libres para probar el
+-- flujo de "verificar votante" + "emitir voto" desde la app.
+-- ------------------------------------------------------------
+INSERT INTO participacion_votante (credencial_civica, id_eleccion, es_observado, id_circuito) VALUES
+  ('AMA1313131', 4, FALSE, 8),
+  ('AMB1414141', 4, FALSE, 8),
+  ('AMC1515151', 4, FALSE, 8),
+  ('AMD1616161', 4, TRUE,  8); -- observado
+
+INSERT INTO voto (id_circuito, id_eleccion, estado, es_observado) VALUES
+  (8, 4, 'Valido',  FALSE), -- id_voto 5
+  (8, 4, 'Valido',  FALSE), -- id_voto 6
+  (8, 4, 'Valido',  TRUE),  -- id_voto 7 (observado)
+  (8, 4, 'Anulado', FALSE); -- id_voto 8
+
+INSERT INTO voto_papeleta (id_voto, id_papeleta) VALUES
+  (5, 23), (5, 26), -- Intendente FA + Junta FA
+  (6, 24), (6, 27), -- Intendente PN + Junta PN
+  (7, 23), (7, 26); -- Intendente FA + Junta FA (voto observado)
+
+-- ------------------------------------------------------------
 -- usuarios / credenciales
 -- Usuarios del sistema (acceso al panel), vinculados a un ciudadano existente
 -- Contraseñas en texto plano (solo para referencia de estos datos de prueba):
---   admin123 / mesa123 / mesa123
+--   admin123 / mesa123 / mesa123 / votante123 (todos los votantes de circuito 0601)
 -- ------------------------------------------------------------
 INSERT INTO usuarios (id_usuario, cedula_identidad, is_admin) VALUES
   (1, '12345678', TRUE),   -- Ana García Pérez (administradora)
@@ -485,6 +573,31 @@ INSERT INTO credenciales (id_usuario, password_hash) VALUES
   (1, SHA2('admin123', 512)),
   (2, SHA2('mesa123', 512)),
   (3, SHA2('mesa123', 512));
+
+-- Usuarios de los votantes del circuito 0601 (Punta del Este): solo pueden votar,
+-- no integran ninguna mesa ni tienen ningún otro rol. Para votar el propio usuario
+-- debe estar logeado, así que necesitan su login igual que cualquier otro votante.
+INSERT INTO usuarios (id_usuario, cedula_identidad, is_admin) VALUES
+  (4,  '17171717', FALSE), -- Camila Rosso Miranda
+  (5,  '20202020', FALSE), -- Valentina Duarte Bica
+  (6,  '24242424', FALSE), -- Nicolás Ferreira Chocho
+  (7,  '25252525', FALSE), -- Agustina Beltrán Machín
+  (8,  '26262626', FALSE), -- Maximiliano Sena Roldán
+  (9,  '27272727', FALSE), -- Cecilia Píriz Aguirre
+  (10, '28282828', FALSE), -- Diego Machado Olveira
+  (11, '29292929', FALSE), -- Florencia Recalde Bueno
+  (12, '30303030', FALSE); -- Gonzalo Antúnez Ferrari
+
+INSERT INTO credenciales (id_usuario, password_hash) VALUES
+  (4,  SHA2('votante123', 512)),
+  (5,  SHA2('votante123', 512)),
+  (6,  SHA2('votante123', 512)),
+  (7,  SHA2('votante123', 512)),
+  (8,  SHA2('votante123', 512)),
+  (9,  SHA2('votante123', 512)),
+  (10, SHA2('votante123', 512)),
+  (11, SHA2('votante123', 512)),
+  (12, SHA2('votante123', 512));
 
 -- ============================================================
 --  FIN DEL ARCHIVO
