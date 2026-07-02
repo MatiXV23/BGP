@@ -88,26 +88,39 @@
   border: 0.5px solid var(--border);
 }
 
-.mesa-header {
+.configuracion-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.mesa-actions {
+.settings-list {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
-.mesa-note {
-  margin-top: 12px;
-  padding: 10px 12px;
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px;
+  border: 0.5px solid var(--border);
   border-radius: var(--radius);
-  background: var(--acc-bg);
-  color: var(--acc-text);
+  background: var(--bg1);
+}
+
+.setting-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text1);
+}
+
+.setting-sub {
+  margin-top: 3px;
   font-size: 12px;
+  color: var(--text3);
   line-height: 1.4;
 }
 
@@ -120,15 +133,15 @@
   font-size: 13px;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 @media (max-width: 900px) {
-  .mesa-header {
+  .configuracion-header {
     align-items: flex-start;
     flex-direction: column;
     gap: 8px;
+  }
+
+  .setting-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

@@ -38,4 +38,21 @@ export const routes: Routes = [
     path: 'departamentos',
     loadComponent: () => import('./route/departamentos/departamentos').then((m) => m.Departamentos),
   },
+  {
+    path: 'seguridad',
+    loadComponent: () => import('./route/seguridad/seguridad').then((m) => m.Seguridad),
+  },
+
+  {
+    path: 'reportes',
+    loadComponent: () => import('./route/reportes/reportes').then((m) => m.Reportes),
+  },
+  {
+    path: 'reportes',
+    loadComponent: () => import('./route/reportes/reportes').then((m) => m.Reportes),
+  },
+  {
+    path: 'configuracion',
+    loadComponent: () => import('./route/configuracion/configuracion').then((m) => m.Configuracion),
+  },
 ];
