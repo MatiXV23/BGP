@@ -1,1 +1,46 @@
-<p>login works!</p>
+<div class="content login-page">
+  <div class="card login-card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Iniciar sesión</div>
+        <div class="section-sub">Accedé con tu cédula de identidad y tu contraseña</div>
+      </div>
+    </div>
+
+    <form class="form-grid" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <label class="form-field form-field-wide">
+        <span>Cédula de identidad</span>
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="8"
+          placeholder="Ej: 12345678"
+          formControlName="cedula_identidad"
+          autocomplete="username"
+        />
+      </label>
+
+      <label class="form-field form-field-wide">
+        <span>Contraseña</span>
+        <input
+          type="password"
+          placeholder="Contraseña"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+      </label>
+
+      @if (error()) {
+        <div class="form-field-wide">
+          <span class="badge badge-danger">{{ error() }}</span>
+        </div>
+      }
+
+      <div class="form-actions form-field-wide">
+        <button class="btn btn-primary" type="submit" [disabled]="loading()">
+          {{ loading() ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

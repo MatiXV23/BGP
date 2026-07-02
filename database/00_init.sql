@@ -94,14 +94,12 @@ CREATE TABLE mesa (
     ci_secretario       CHAR(8)        NOT NULL,
     ci_vocal            CHAR(8)        NOT NULL,
     estado              ENUM('Abierta','Cerrada') NOT NULL DEFAULT 'Abierta',
-    fecha_hora_cierre   DATETIME       NULL,
     CONSTRAINT fk_mesa_circ  FOREIGN KEY (id_circuito)    REFERENCES circuito(id_circuito),
     CONSTRAINT fk_mesa_pres  FOREIGN KEY (ci_presidente)  REFERENCES miembro_mesa(cedula_identidad),
     CONSTRAINT fk_mesa_sec   FOREIGN KEY (ci_secretario)  REFERENCES miembro_mesa(cedula_identidad),
     CONSTRAINT fk_mesa_vocal FOREIGN KEY (ci_vocal)       REFERENCES miembro_mesa(cedula_identidad),
     CONSTRAINT fk_mesa_elec FOREIGN KEY (id_eleccion) REFERENCES eleccion(id_eleccion),
-    CONSTRAINT uq_mesa_circ_elec UNIQUE (id_circuito, id_eleccion),
-    CONSTRAINT chk_fecha_cierre_estado CHECK ((estado = 'Abierta' AND fecha_hora_cierre IS NULL) OR (estado = 'Cerrada' AND fecha_hora_cierre IS NOT NULL))
+    CONSTRAINT uq_mesa_circ_elec UNIQUE (id_circuito, id_eleccion)
 );
 
 CREATE TABLE asignacion_policial (
@@ -205,6 +203,19 @@ CREATE TABLE voto_papeleta (
     CONSTRAINT fk_vp_pap  FOREIGN KEY (id_papeleta) REFERENCES papeleta(id_papeleta)
 );
 
+
+CREATE TABLE usuarios (
+    id_usuario          INT         AUTO_INCREMENT PRIMARY KEY,
+    cedula_identidad    CHAR(8)            NOT NULL,
+    is_admin            BOOLEAN             NOT NULL DEFAULT FALSE,
+    CONSTRAINT fk_us_ciudadano FOREIGN KEY (cedula_identidad) REFERENCES ciudadano(cedula_identidad)
+);
+
+CREATE TABLE credenciales (
+    id_usuario       INT         AUTO_INCREMENT PRIMARY KEY,
+    password_hash       CHAR(128)   NOT NULL,
+    CONSTRAINT fk_cred_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+);
 
 CREATE INDEX idx_circuito_depto    ON circuito(id_departamento);
 CREATE INDEX idx_voto_circuito     ON voto(id_circuito);

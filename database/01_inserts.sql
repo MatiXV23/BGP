@@ -439,10 +439,53 @@ INSERT INTO circuito_credencial (id_circuito, credencial_civica) VALUES
   (7, 'AVO1212121'),
   (7, 'AVO2121212');
 
+-- ------------------------------------------------------------
+-- Votación de la mesa 12 (circuito 1, elección 4 — Municipal)
+-- Es la mesa de circuito 1: presidenta Ana García Pérez, secretario
+-- Carlos Rodríguez Silva, vocal María López Torres.
+-- 4 de los 5 votantes habilitados del circuito ya concurrieron.
+-- ------------------------------------------------------------
+INSERT INTO participacion_votante (credencial_civica, id_eleccion, es_observado, id_circuito) VALUES
+  ('ABA1234567', 4, FALSE, 1), -- Ana García Pérez
+  ('ABB2345678', 4, FALSE, 1), -- Carlos Rodríguez Silva
+  ('ABC3456789', 4, FALSE, 1), -- María López Torres
+  ('ACK1111111', 4, TRUE,  1); -- Juan Pedro Sánchez Vidal (observado)
+
+INSERT INTO voto (id_circuito, id_eleccion, estado, es_observado) VALUES
+  (1, 4, 'Valido', FALSE), -- id_voto 1
+  (1, 4, 'Valido', FALSE), -- id_voto 2
+  (1, 4, 'Valido', TRUE),  -- id_voto 3 (observado)
+  (1, 4, 'Blanco', FALSE); -- id_voto 4
+
+-- Cada voto válido eligió candidato a intendente + lista a la junta departamental del mismo partido
+INSERT INTO voto_papeleta (id_voto, id_papeleta) VALUES
+  (1, 16), (1, 19), -- Intendente FA + Junta FA
+  (2, 16), (2, 19), -- Intendente FA + Junta FA
+  (3, 17), (3, 20); -- Intendente PN + Junta PN (voto observado)
+
+-- ------------------------------------------------------------
+-- Segundo agente de seguridad asignado a la Escuela N° 123 – Palermo
+-- (establecimiento de la mesa 12) para la elección municipal
+-- ------------------------------------------------------------
+INSERT INTO asignacion_policial (cedula_agente, id_establecimiento, id_eleccion) VALUES
+  ('22334455', 1, 4);
+
+-- ------------------------------------------------------------
+-- usuarios / credenciales
+-- Usuarios del sistema (acceso al panel), vinculados a un ciudadano existente
+-- Contraseñas en texto plano (solo para referencia de estos datos de prueba):
+--   admin123 / mesa123 / mesa123
+-- ------------------------------------------------------------
+INSERT INTO usuarios (id_usuario, cedula_identidad, is_admin) VALUES
+  (1, '12345678', TRUE),   -- Ana García Pérez (administradora)
+  (2, '23456789', FALSE),  -- Carlos Rodríguez Silva (miembro de mesa)
+  (3, '34567890', FALSE);  -- María López Torres (miembro de mesa)
+
+INSERT INTO credenciales (id_usuario, password_hash) VALUES
+  (1, SHA2('admin123', 512)),
+  (2, SHA2('mesa123', 512)),
+  (3, SHA2('mesa123', 512));
+
 -- ============================================================
 --  FIN DEL ARCHIVO
---  Tablas sin datos (por diseño):
---    voto
---    voto_papeleta
---    participacion_votante
 -- ============================================================

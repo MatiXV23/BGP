@@ -1,4 +1,4 @@
 export type Credenciales = {
-    email: string,
-    password: string,
-}
+  cedula_identidad: string;
+  password: string;
+};

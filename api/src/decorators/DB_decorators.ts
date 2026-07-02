@@ -15,6 +15,7 @@ import { PartidoPoliticoDB } from "../services/partidoPoliticoDB.js";
 import { PapeletaDB } from "../services/papeletaDB.js";
 import { ParticipacionVotanteDB } from "../services/participacionVotanteDB.js";
 import { VotoDB } from "../services/votoDB.js";
+import { UsuarioDB } from "../services/usuarioDB.js";
 
 export default fastifyPlugin(async function (fastify) {
   fastify.decorate("DepartamentoDB", new DepartamentoDB(fastify.mysql));
@@ -36,6 +37,7 @@ export default fastifyPlugin(async function (fastify) {
     new ParticipacionVotanteDB(fastify.mysql),
   );
   fastify.decorate("VotoDB", new VotoDB(fastify.mysql));
+  fastify.decorate("UsuarioDB", new UsuarioDB(fastify.mysql));
 });
 
 declare module "fastify" {
@@ -56,5 +58,6 @@ declare module "fastify" {
     PapeletaDB: PapeletaDB;
     ParticipacionVotanteDB: ParticipacionVotanteDB;
     VotoDB: VotoDB;
+    UsuarioDB: UsuarioDB;
   }
 }

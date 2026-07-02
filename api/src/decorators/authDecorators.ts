@@ -20,7 +20,7 @@ export default fastifyPlugin(async function (fastify) {
   fastify.decorate("isAdminOrOwner", async (req: any, rep: any) => {
     const usuario = req.user;
     if (
-      usuario.administrador === false &&
+      !usuario.is_admin &&
       req.params.id_usuario !== usuario.id_usuario
     )
       throw new PC_NoAuthorized();
@@ -28,7 +28,7 @@ export default fastifyPlugin(async function (fastify) {
 
   fastify.decorate("isAdmin", async (req: any, rep: any) => {
     const usuario = req.user;
-    if (usuario.administrador === false) throw new PC_NoAuthorized();
+    if (!usuario.is_admin) throw new PC_NoAuthorized();
   });
 
   fastify.decorate("isNotOwner", async (req: any, rep: any) => {

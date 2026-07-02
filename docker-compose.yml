@@ -2,6 +2,9 @@ services:
   db:
     image: mysql:8.4
     container_name: db
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_USER: ${MYSQL_USER}
@@ -29,6 +32,7 @@ services:
       # - db:/var/lib/mysql.
       - ./database/00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
       - ./database/01_inserts.sql:/docker-entrypoint-initdb.d/01_inserts.sql
+      - ./database/charset.cnf:/etc/mysql/conf.d/charset.cnf
     networks:
       - bgp_net
 

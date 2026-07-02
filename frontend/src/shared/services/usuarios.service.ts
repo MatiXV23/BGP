@@ -1,6 +1,6 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Usuario, UsuarioConPwd, UsuarioSinId } from '../types/usuario';
+import { Usuario, UsuarioPost } from '../types/usuario';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -10,29 +10,21 @@ import { environment } from '../../environments/environment';
 export class UsuariosService {
   private httpClient = inject(HttpClient);
 
-  public async getUserById(id_usuario: string): Promise<Usuario> {
+  public async getUserById(id_usuario: number): Promise<Usuario> {
     return await firstValueFrom(
       this.httpClient.get<Usuario>(`${environment.apiUrl}/usuarios/${id_usuario}`)
     );
   }
 
-  public async postUsuario(datos: UsuarioConPwd): Promise<Usuario> {
+  public async postUsuario(datos: UsuarioPost): Promise<Usuario> {
     return await firstValueFrom(
       this.httpClient.post<Usuario>(environment.apiUrl + '/usuarios', datos)
     );
   }
-  public async getUsuarios(queryParams?: { email?: string; nro_documento?: string }) {
-    let params = new HttpParams();
-    if (queryParams) {
-      Object.entries(queryParams).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          params = params.append(key, String(value));
-        }
-      });
-    }
 
+  public async getUsuarios(): Promise<Usuario[]> {
     return await firstValueFrom(
-      this.httpClient.get<Usuario[]>(environment.apiUrl + '/usuarios', { params })
+      this.httpClient.get<Usuario[]>(environment.apiUrl + '/usuarios')
     );
   }
 

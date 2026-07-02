@@ -10,7 +10,7 @@ export const isNotLoggedGuard: CanActivateFn = async (route, state) => {
 
   await authService.checkLocalStorage()
 
-  return mainStore.token() 
-    ? router.createUrlTree(['/home'])
-    : true 
+  return mainStore.token()
+    ? router.createUrlTree(['/'])
+    : true
 };

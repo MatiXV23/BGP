@@ -1,81 +1,131 @@
-<div class="content">
-  <div class="mesa-header">
-    <div>
-      <div class="section-title">Gestión de mesa</div>
-      <div class="section-sub">Control operativo de la mesa de votación</div>
-    </div>
-
-    @if (mesaCerrada) {
-      <span class="badge badge-danger">Mesa cerrada</span>
-    } @else {
-      <span class="badge badge-success">Mesa abierta</span>
-    }
+@if (mesaContext.loading() && !mesaContext.loaded()) {
+  <div class="content">
+    <div class="empty-state">Cargando datos de la mesa...</div>
   </div>
-
-  <div class="card">
-    <div class="section-header">
+} @else if (mesaContext.mesa(); as mesa) {
+  <div class="content">
+    <div class="mesa-header">
       <div>
-        <div class="section-title">Estado de la mesa</div>
-        <div class="section-sub">
-          Desde esta sección se podrá cerrar la mesa al finalizar la votación.
-        </div>
+        <div class="section-title">Gestión de mesa</div>
+        <div class="section-sub">Control operativo de la mesa de votación — Circuito {{ mesa.numero_circuito }}</div>
       </div>
-    </div>
 
-    <div class="mesa-actions">
-      <button class="btn btn-primary" [disabled]="mesaCerrada" (click)="cerrarMesa()">
-        Cerrar mesa
-      </button>
-
-      @if (mesaCerrada) {
-        <span class="field-tag">La mesa ya fue cerrada</span>
+      @if (mesa.estado === 'Cerrada') {
+        <span class="badge badge-danger">Mesa cerrada</span>
       } @else {
-        <span class="field-tag">Pendiente de cierre</span>
+        <span class="badge badge-success">Mesa abierta</span>
       }
     </div>
 
-    <div class="mesa-note">
-      Una vez cerrada la mesa, el sistema no debería permitir nuevos votos ni volver a abrirla. Los
-      resultados solo deberían estar disponibles después del cierre.
-    </div>
-  </div>
-
-  <div class="two-col">
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Datos del circuito</div>
-          <div class="section-sub">Información que vendrá desde la base de datos</div>
+          <div class="section-title">Estado de la mesa</div>
+          <div class="section-sub">
+            Desde esta sección se puede cerrar la mesa al finalizar la votación.
+          </div>
         </div>
       </div>
 
-      <div class="empty-state">Datos del circuito pendientes de conexión con backend.</div>
+      <div class="mesa-actions">
+        @if (mainStore.isAdmin()) {
+          <button class="btn btn-primary" [disabled]="mesa.estado === 'Cerrada' || cerrando" (click)="cerrarMesa()">
+            {{ cerrando ? 'Cerrando...' : 'Cerrar mesa' }}
+          </button>
+        }
+
+        @if (mesa.estado === 'Cerrada') {
+          <span class="field-tag">La mesa ya fue cerrada</span>
+        } @else if (mainStore.isAdmin()) {
+          <span class="field-tag">Pendiente de cierre</span>
+        } @else {
+          <span class="field-tag">Solo un administrador puede cerrar la mesa</span>
+        }
+      </div>
+
+      <div class="mesa-note">
+        Una vez cerrada la mesa, el sistema no permite volver a abrirla.
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Datos del circuito</div>
+            <div class="section-sub">{{ mesa.eleccion_tipo }} · {{ mesa.eleccion_fecha }}</div>
+          </div>
+        </div>
+
+        <div class="row-item">
+          <span class="row-label">Circuito</span><span class="row-value">{{ mesa.numero_circuito }}</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Establecimiento</span><span class="row-value">{{ mesa.establecimiento }}</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Departamento</span><span class="row-value">{{ mesa.departamento }}</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Localidad</span><span class="row-value">{{ mesa.localidad }}</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Habilitados</span><span class="row-value">{{ mesa.habilitados }}</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Integrantes de mesa</div>
+            <div class="section-sub">Presidente, secretario y vocal</div>
+          </div>
+        </div>
+
+        <div class="row-item">
+          <span class="row-label">Presidente</span><span class="row-value">{{ mesa.presidente.nombre_completo }}</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Secretario/a</span><span class="row-value">{{ mesa.secretario.nombre_completo }}</span>
+        </div>
+        <div class="row-item">
+          <span class="row-label">Vocal</span><span class="row-value">{{ mesa.vocal.nombre_completo }}</span>
+        </div>
+      </div>
     </div>
 
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Integrantes de mesa</div>
-          <div class="section-sub">Presidente, secretario y vocal</div>
+          <div class="section-title">Resumen de votación</div>
+          <div class="section-sub">Votos emitidos, observados, anulados y en blanco de esta mesa.</div>
         </div>
       </div>
 
-      <div class="empty-state">Integrantes pendientes de carga desde la base de datos.</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Resumen de votación</div>
-        <div class="section-sub">
-          Espacio reservado para mostrar votos emitidos, observados, anulados y blancos.
-        </div>
+      <div class="row-item">
+        <span class="row-label">Votos emitidos</span><span class="row-value">{{ mesa.votos_emitidos }}</span>
+      </div>
+      <div class="row-item">
+        <span class="row-label">Votos válidos</span><span class="row-value">{{ mesa.votos_validos }}</span>
+      </div>
+      <div class="row-item">
+        <span class="row-label">Votos en blanco</span><span class="row-value">{{ mesa.votos_blancos }}</span>
+      </div>
+      <div class="row-item">
+        <span class="row-label">Votos anulados</span><span class="row-value">{{ mesa.votos_anulados }}</span>
+      </div>
+      <div class="row-item">
+        <span class="row-label">Votos observados</span><span class="row-value">{{ mesa.votos_observados }}</span>
       </div>
     </div>
-
-    <div class="empty-state">
-      El resumen se mostrará cuando se conecte esta página con los servicios del backend.
+  </div>
+} @else {
+  <div class="content">
+    <div class="card">
+      <div class="section-title">No tenés una mesa asignada</div>
+      <div class="section-sub" style="margin-top: 4px">
+        Tu usuario no integra la autoridad (presidente, secretario o vocal) de ninguna mesa de votación.
+      </div>
     </div>
   </div>
-</div>
+}
