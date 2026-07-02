@@ -1,0 +1,134 @@
+.vote-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vote-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field span {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.form-field input {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border2);
+  background: var(--bg1);
+  color: var(--text1);
+  font-size: 13px;
+  outline: none;
+}
+
+.form-field input:focus {
+  border-color: var(--acc);
+}
+
+.notice {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.notice.warning {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
+.notice.info {
+  background: var(--acc-bg);
+  color: var(--acc-text);
+}
+
+.paper-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.paper-option {
+  display: grid;
+  grid-template-columns: auto 54px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg1);
+  cursor: pointer;
+}
+
+.paper-option:hover {
+  border-color: var(--acc);
+  background: var(--acc-bg);
+}
+
+.paper-option input {
+  cursor: pointer;
+}
+
+.paper-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  border-radius: var(--radius);
+  border: 0.5px solid var(--border2);
+  background: var(--bg2);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text1);
+}
+
+.paper-info {
+  min-width: 0;
+}
+
+.paper-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text1);
+}
+
+.paper-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.vote-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .vote-form {
+    grid-template-columns: 1fr;
+  }
+
+  .vote-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,77 @@
+<div class="content">
+  <div class="ciudadanos-header">
+    <div>
+      <div class="section-title">Ciudadanos</div>
+      <div class="section-sub">Gestión de personas habilitadas dentro del sistema electoral</div>
+    </div>
+
+    <button class="btn btn-primary" (click)="alternarFormulario()">Nuevo ciudadano</button>
+  </div>
+
+  @if (mostrarFormulario) {
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Alta de ciudadano</div>
+          <div class="section-sub">
+            Formulario preparado para conectar luego con la base de datos
+          </div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span>Cédula de identidad</span>
+          <input type="text" placeholder="Ej: 12345678" />
+        </label>
+
+        <label class="form-field">
+          <span>Credencial cívica</span>
+          <input type="text" placeholder="Ej: ABA1234567" />
+        </label>
+
+        <label class="form-field form-field-wide">
+          <span>Nombre completo</span>
+          <input type="text" placeholder="Nombre y apellido" />
+        </label>
+
+        <label class="form-field">
+          <span>Fecha de nacimiento</span>
+          <input type="date" />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Guardar ciudadano</button>
+        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Listado de ciudadanos</div>
+        <div class="section-sub">
+          Esta sección luego consumirá el servicio de ciudadanos del backend
+        </div>
+      </div>
+
+      <span class="field-tag">Pendiente de conexión</span>
+    </div>
+
+    <div class="filters-row">
+      <label class="form-field">
+        <span>Buscar</span>
+        <input type="text" placeholder="Buscar por CI, credencial o nombre" />
+      </label>
+
+      <button class="btn">Filtrar</button>
+    </div>
+
+    <div class="empty-state">
+      Todavía no se están cargando ciudadanos desde la base de datos. Esta tabla quedará conectada
+      al servicio correspondiente más adelante.
+    </div>
+  </div>
+</div>

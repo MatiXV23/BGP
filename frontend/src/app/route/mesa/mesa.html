@@ -1,0 +1,81 @@
+<div class="content">
+  <div class="mesa-header">
+    <div>
+      <div class="section-title">Gestión de mesa</div>
+      <div class="section-sub">Control operativo de la mesa de votación</div>
+    </div>
+
+    @if (mesaCerrada) {
+      <span class="badge badge-danger">Mesa cerrada</span>
+    } @else {
+      <span class="badge badge-success">Mesa abierta</span>
+    }
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Estado de la mesa</div>
+        <div class="section-sub">
+          Desde esta sección se podrá cerrar la mesa al finalizar la votación.
+        </div>
+      </div>
+    </div>
+
+    <div class="mesa-actions">
+      <button class="btn btn-primary" [disabled]="mesaCerrada" (click)="cerrarMesa()">
+        Cerrar mesa
+      </button>
+
+      @if (mesaCerrada) {
+        <span class="field-tag">La mesa ya fue cerrada</span>
+      } @else {
+        <span class="field-tag">Pendiente de cierre</span>
+      }
+    </div>
+
+    <div class="mesa-note">
+      Una vez cerrada la mesa, el sistema no debería permitir nuevos votos ni volver a abrirla. Los
+      resultados solo deberían estar disponibles después del cierre.
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Datos del circuito</div>
+          <div class="section-sub">Información que vendrá desde la base de datos</div>
+        </div>
+      </div>
+
+      <div class="empty-state">Datos del circuito pendientes de conexión con backend.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Integrantes de mesa</div>
+          <div class="section-sub">Presidente, secretario y vocal</div>
+        </div>
+      </div>
+
+      <div class="empty-state">Integrantes pendientes de carga desde la base de datos.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Resumen de votación</div>
+        <div class="section-sub">
+          Espacio reservado para mostrar votos emitidos, observados, anulados y blancos.
+        </div>
+      </div>
+    </div>
+
+    <div class="empty-state">
+      El resumen se mostrará cuando se conecte esta página con los servicios del backend.
+    </div>
+  </div>
+</div>

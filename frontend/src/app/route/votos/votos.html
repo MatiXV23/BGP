@@ -1,0 +1,105 @@
+<div class="content">
+  <div class="vote-header">
+    <div>
+      <div class="section-title">Emitir voto</div>
+      <div class="section-sub">
+        Elecciones municipales 2025 · Circuito 0101 · Escuela N° 123 – Palermo
+      </div>
+    </div>
+
+    <span class="badge badge-success">Mesa abierta</span>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Datos del votante</div>
+        <div class="section-sub">Verificación previa a la emisión del voto</div>
+      </div>
+    </div>
+
+    <div class="vote-form">
+      <label class="form-field">
+        <span>Credencial cívica</span>
+        <input type="text" placeholder="Ej: ABA1234567" />
+      </label>
+
+      <label class="form-field">
+        <span>Circuito donde vota</span>
+        <input type="text" value="0101" />
+      </label>
+
+      <button class="btn btn-primary">Verificar votante</button>
+    </div>
+
+    <div class="notice warning">
+      Si el circuito ingresado no coincide con el circuito asignado por padrón, el voto se marcará
+      como observado y deberá ser autorizado por el presidente de mesa.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Seleccione las papeletas</div>
+        <div class="section-sub">
+          El voto puede contener una o más papeletas según el tipo de elección.
+        </div>
+      </div>
+    </div>
+
+    <div class="paper-list">
+      @for (papeleta of papeletas; track papeleta.id) {
+        <label class="paper-option">
+          <input
+            type="checkbox"
+            [checked]="estaSeleccionada(papeleta.id)"
+            (change)="alternarPapeleta(papeleta.id)"
+          />
+
+          <div class="paper-number">
+            {{ papeleta.numeroLista ?? '—' }}
+          </div>
+
+          <div class="paper-info">
+            <div class="paper-title">
+              {{ papeleta.titulo }}
+            </div>
+
+            <div class="paper-sub">
+              {{ papeleta.subtitulo }}
+            </div>
+          </div>
+        </label>
+      }
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Confirmación del voto</div>
+          <div class="section-sub">Papeletas seleccionadas: {{ cantidadSeleccionadas() }}</div>
+        </div>
+      </div>
+
+      <div class="vote-actions">
+        <button
+          class="btn btn-primary"
+          [disabled]="cantidadSeleccionadas() === 0"
+          (click)="emitirVoto()"
+        >
+          Emitir voto
+        </button>
+
+        <button class="btn" (click)="votarEnBlanco()">Votar en blanco</button>
+
+        <button class="btn" (click)="limpiarSeleccion()">Limpiar selección</button>
+      </div>
+
+      <div class="notice info">
+        Por secreto del voto, esta pantalla no asociará directamente el contenido del voto con el
+        ciudadano. La participación se registra aparte para controlar que no se vote más de una vez.
+      </div>
+    </div>
+  </div>
+</div>

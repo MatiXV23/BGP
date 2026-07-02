@@ -1,0 +1,44 @@
+.mesa-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mesa-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mesa-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--acc-bg);
+  color: var(--acc-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.empty-state {
+  padding: 14px;
+  border: 0.5px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--bg1);
+  color: var(--text3);
+  font-size: 13px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .mesa-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
