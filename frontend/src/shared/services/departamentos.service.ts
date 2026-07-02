@@ -7,7 +7,7 @@ import type { Departamento, DepartamentoPost } from '../types/electoral';
 @Injectable({ providedIn: 'root' })
 export class DepartamentosService {
   private httpClient = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/departamentos`;
+  private readonly base = `${environment.apiUrl}/departamento`;
 
   public async getAll(): Promise<Departamento[]> {
     return await firstValueFrom(this.httpClient.get<Departamento[]>(this.base));

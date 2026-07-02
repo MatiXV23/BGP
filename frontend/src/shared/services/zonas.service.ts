@@ -7,7 +7,7 @@ import type { Zona, ZonaPost } from '../types/electoral';
 @Injectable({ providedIn: 'root' })
 export class ZonasService {
   private httpClient = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/zonas`;
+  private readonly base = `${environment.apiUrl}/zona`;
 
   public async getAll(): Promise<Zona[]> {
     return await firstValueFrom(this.httpClient.get<Zona[]>(this.base));

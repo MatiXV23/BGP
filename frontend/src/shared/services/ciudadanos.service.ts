@@ -7,7 +7,7 @@ import type { Ciudadano } from '../types/electoral';
 @Injectable({ providedIn: 'root' })
 export class CiudadanosService {
   private httpClient = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/ciudadanos`;
+  private readonly base = `${environment.apiUrl}/ciudadano`;
 
   public async getAll(): Promise<Ciudadano[]> {
     return await firstValueFrom(this.httpClient.get<Ciudadano[]>(this.base));

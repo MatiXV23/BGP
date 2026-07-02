@@ -7,7 +7,7 @@ import type { Circuito, CircuitoPost } from '../types/electoral';
 @Injectable({ providedIn: 'root' })
 export class CircuitosService {
   private httpClient = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/circuitos`;
+  private readonly base = `${environment.apiUrl}/circuito`;
 
   public async getAll(): Promise<Circuito[]> {
     return await firstValueFrom(this.httpClient.get<Circuito[]>(this.base));
