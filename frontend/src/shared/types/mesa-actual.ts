@@ -57,3 +57,15 @@ export type MesaActual = {
   seguridad: AgenteSeguridad[];
   papeletas: PapeletaResultado[];
 };
+
+export type VerificacionVotante = {
+  nombre_completo: string;
+  ya_voto: boolean;
+  observado: boolean;
+};
+
+export type VotoEmitido = {
+  id_voto: number;
+  estado: 'Valido' | 'Blanco';
+  observado: boolean;
+};

@@ -1,105 +1,185 @@
-<div class="content">
-  <div class="vote-header">
-    <div>
-      <div class="section-title">Emitir voto</div>
-      <div class="section-sub">
-        Elecciones municipales 2025 · Circuito 0101 · Escuela N° 123 – Palermo
-      </div>
-    </div>
-
-    <span class="badge badge-success">Mesa abierta</span>
+@if (cargando()) {
+  <div class="content">
+    <div class="empty-state">Cargando tu mesa de votación...</div>
   </div>
-
-  <div class="card">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Datos del votante</div>
-        <div class="section-sub">Verificación previa a la emisión del voto</div>
-      </div>
-    </div>
-
-    <div class="vote-form">
-      <label class="form-field">
-        <span>Credencial cívica</span>
-        <input type="text" placeholder="Ej: ABA1234567" />
-      </label>
-
-      <label class="form-field">
-        <span>Circuito donde vota</span>
-        <input type="text" value="0101" />
-      </label>
-
-      <button class="btn btn-primary">Verificar votante</button>
-    </div>
-
-    <div class="notice warning">
-      Si el circuito ingresado no coincide con el circuito asignado por padrón, el voto se marcará
-      como observado y deberá ser autorizado por el presidente de mesa.
+} @else if (errorMesa()) {
+  <div class="content">
+    <div class="card">
+      <div class="section-title">No podés votar</div>
+      <div class="section-sub" style="margin-top: 4px">{{ errorMesa() }}</div>
     </div>
   </div>
-
-  <div class="card">
-    <div class="section-header">
+} @else {
+  <div class="content">
+    <div class="vote-header">
       <div>
-        <div class="section-title">Seleccione las papeletas</div>
-        <div class="section-sub">
-          El voto puede contener una o más papeletas según el tipo de elección.
+        <div class="section-title">Emitir voto</div>
+        @if (mesaVotacion(); as mesa) {
+          <div class="section-sub">
+            {{ mesa.eleccion_tipo }} · Circuito {{ mesa.numero_circuito }} · {{ mesa.establecimiento }}
+          </div>
+        }
+      </div>
+
+      @if (mesaAbierta) {
+        <span class="badge badge-success">Mesa abierta</span>
+      } @else {
+        <span class="badge badge-danger">Mesa cerrada</span>
+      }
+    </div>
+
+    @if (!mesaAbierta) {
+      <div class="notice warning">La mesa está cerrada: no se pueden procesar ni emitir votos.</div>
+    }
+
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Tus datos</div>
+          <div class="section-sub">
+            Votás con tu propia identidad — nadie puede votar en nombre de otro ciudadano.
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="paper-list">
-      @for (papeleta of papeletas; track papeleta.id) {
-        <label class="paper-option">
-          <input
-            type="checkbox"
-            [checked]="estaSeleccionada(papeleta.id)"
-            (change)="alternarPapeleta(papeleta.id)"
-          />
-
-          <div class="paper-number">
-            {{ papeleta.numeroLista ?? '—' }}
-          </div>
-
-          <div class="paper-info">
-            <div class="paper-title">
-              {{ papeleta.titulo }}
-            </div>
-
-            <div class="paper-sub">
-              {{ papeleta.subtitulo }}
-            </div>
-          </div>
+      <div class="vote-form">
+        <label class="form-field">
+          <span>Estás votando como</span>
+          <input type="text" [value]="mainStore.user()?.nombre_completo ?? '—'" disabled />
         </label>
+
+        <label class="form-field">
+          <span>Tu credencial cívica</span>
+          <input type="text" [value]="mainStore.user()?.credencial_civica ?? '—'" disabled />
+        </label>
+
+        <label class="form-field">
+          <span>Circuito donde vota</span>
+          <input
+            type="text"
+            [(ngModel)]="circuitoIngresado"
+            name="circuitoIngresado"
+            [disabled]="!mesaAbierta"
+          />
+        </label>
+
+        <button
+          class="btn btn-primary"
+          [disabled]="!mesaAbierta || verificando() || !circuitoIngresado.trim()"
+          (click)="verificarVotante()"
+        >
+          {{ verificando() ? 'Verificando...' : 'Verificar mi voto' }}
+        </button>
+      </div>
+
+      @if (errorVerificacion()) {
+        <div class="notice danger">{{ errorVerificacion() }}</div>
+      }
+
+      @if (verificacion(); as v) {
+        @if (v.ya_voto) {
+          <div class="notice danger">
+            Ya emitiste tu voto en esta elección. No podés volver a votar.
+          </div>
+        } @else {
+          <div class="notice success">
+            Estás habilitado/a para votar.
+            @if (v.observado) {
+              El circuito ingresado no coincide con el asignado por padrón: tu voto quedará
+              marcado como <strong>observado</strong>.
+            }
+          </div>
+        }
+      } @else {
+        <div class="notice info">
+          Si el circuito ingresado no coincide con tu circuito asignado por padrón, tu voto se
+          marcará como observado.
+        </div>
       }
     </div>
 
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Confirmación del voto</div>
-          <div class="section-sub">Papeletas seleccionadas: {{ cantidadSeleccionadas() }}</div>
+          <div class="section-title">Seleccione las papeletas</div>
+          @if (!puedeVotar) {
+            <div class="section-sub">Verificá tu voto para poder elegir papeletas.</div>
+          } @else {
+            <div class="section-sub">
+              El voto puede contener una o más papeletas según el tipo de elección.
+            </div>
+          }
         </div>
       </div>
 
-      <div class="vote-actions">
-        <button
-          class="btn btn-primary"
-          [disabled]="cantidadSeleccionadas() === 0"
-          (click)="emitirVoto()"
-        >
-          Emitir voto
-        </button>
+      <div class="paper-list" [class.paper-list-disabled]="!puedeVotar">
+        @for (papeleta of mesaVotacion()?.papeletas ?? []; track papeleta.id_papeleta) {
+          <label class="paper-option">
+            <input
+              type="checkbox"
+              [checked]="estaSeleccionada(papeleta.id_papeleta)"
+              [disabled]="!puedeVotar"
+              (change)="alternarPapeleta(papeleta.id_papeleta)"
+            />
 
-        <button class="btn" (click)="votarEnBlanco()">Votar en blanco</button>
+            <div class="paper-number">
+              {{ papeleta.numero_lista ?? '—' }}
+            </div>
 
-        <button class="btn" (click)="limpiarSeleccion()">Limpiar selección</button>
+            <div class="paper-info">
+              <div class="paper-title">
+                {{ papeleta.descripcion }}
+              </div>
+
+              <div class="paper-sub">
+                {{ papeleta.partido }}{{ papeleta.organo_candidatura ? ' · ' + papeleta.organo_candidatura : '' }}
+              </div>
+            </div>
+          </label>
+        }
       </div>
 
-      <div class="notice info">
-        Por secreto del voto, esta pantalla no asociará directamente el contenido del voto con el
-        ciudadano. La participación se registra aparte para controlar que no se vote más de una vez.
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Confirmación del voto</div>
+            <div class="section-sub">Papeletas seleccionadas: {{ cantidadSeleccionadas() }}</div>
+          </div>
+        </div>
+
+        @if (errorEmision()) {
+          <div class="notice danger">{{ errorEmision() }}</div>
+        }
+
+        @if (votoConfirmado(); as voto) {
+          <div class="notice success">
+            Tu voto quedó registrado ({{ voto.estado === 'Blanco' ? 'en blanco' : 'válido' }}{{ voto.observado ? ', observado' : '' }}).
+          </div>
+        }
+
+        <div class="vote-actions">
+          <button
+            class="btn btn-primary"
+            [disabled]="!puedeVotar || cantidadSeleccionadas() === 0 || emitiendo()"
+            (click)="emitirVoto()"
+          >
+            {{ emitiendo() ? 'Emitiendo...' : 'Emitir voto' }}
+          </button>
+
+          <button class="btn" [disabled]="!puedeVotar || emitiendo()" (click)="votarEnBlanco()">
+            Votar en blanco
+          </button>
+
+          <button class="btn" [disabled]="!puedeVotar" (click)="limpiarSeleccion()">
+            Limpiar selección
+          </button>
+        </div>
+
+        <div class="notice info">
+          Por secreto del voto, esta pantalla no asocia el contenido de tu voto con vos: solo se
+          registra que participaste, para controlar que no votes más de una vez.
+        </div>
       </div>
     </div>
   </div>
-</div>
+}

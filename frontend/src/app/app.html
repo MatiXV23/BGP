@@ -17,63 +17,15 @@
     Panel principal
   </a>
 
-  <a class="nav-item" routerLink="/votar" routerLinkActive="active">
+  <a
+    class="nav-item"
+    [class.disabled]="mesaContext.mesa()?.estado === 'Cerrada'"
+    routerLink="/votar"
+    routerLinkActive="active"
+    [title]="mesaContext.mesa()?.estado === 'Cerrada' ? 'La mesa está cerrada, no se puede votar' : ''"
+  >
     <i class="ti ti-checkbox" aria-hidden="true"></i>
     Votar
-  </a>
-
-  <a class="nav-item" routerLink="/mesa" routerLinkActive="active">
-    <i class="ti ti-layout-dashboard" aria-hidden="true"></i>
-    Mesa de votación
-  </a>
-
-  <a class="nav-item" routerLink="/resultados" routerLinkActive="active">
-    <i class="ti ti-chart-bar" aria-hidden="true"></i>
-    Resultados
-  </a>
-
-  <div class="nav-section">Administración</div>
-
-  <a class="nav-item" routerLink="/elecciones" routerLinkActive="active">
-    <i class="ti ti-calendar-event" aria-hidden="true"></i>
-    Elecciones
-  </a>
-
-  <a class="nav-item" routerLink="/ciudadanos" routerLinkActive="active">
-    <i class="ti ti-users" aria-hidden="true"></i>
-    Ciudadanos
-  </a>
-
-  <a class="nav-item" routerLink="/circuitos" routerLinkActive="active">
-    <i class="ti ti-map-pin" aria-hidden="true"></i>
-    Circuitos
-  </a>
-
-  <a class="nav-item" routerLink="/establecimientos" routerLinkActive="active">
-    <i class="ti ti-building" aria-hidden="true"></i>
-    Establecimientos
-  </a>
-
-  <a class="nav-item" routerLink="/departamentos" routerLinkActive="active">
-    <i class="ti ti-map" aria-hidden="true"></i>
-    Departamentos
-  </a>
-
-  <div class="nav-section">Sistema</div>
-
-  <a class="nav-item" routerLink="/seguridad" routerLinkActive="active">
-    <i class="ti ti-map" aria-hidden="true"></i>
-    Seguridad
-  </a>
-
-  <a class="nav-item" routerLink="/reportes" routerLinkActive="active">
-    <i class="ti ti-map" aria-hidden="true"></i>
-    Reportes
-  </a>
-
-  <a class="nav-item" routerLink="/configuracion" routerLinkActive="active">
-    <i class="ti ti-map" aria-hidden="true"></i>
-    Configuración
   </a>
 </nav>
 
@@ -103,15 +55,69 @@
         }
       }
 
-      <div class="avatar av-blue">{{ iniciales() }}</div>
-      <button class="btn" (click)="logOut()" title="Cerrar sesión">
+      <button class="avatar av-blue avatar-btn" (click)="togglePerfil()" title="Ver mi perfil">
+        {{ iniciales() }}
+      </button>
+      <button class="btn btn-danger" (click)="logOut()" title="Cerrar sesión">
         <i class="ti ti-logout" aria-hidden="true"></i>
+        Salir
       </button>
     </div>
   </div>
 
   <router-outlet></router-outlet>
 </div>
+
+@if (mostrarPerfil()) {
+  <div class="modal-backdrop" (click)="togglePerfil()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="section-title">Mi perfil</div>
+        <button class="modal-close" (click)="togglePerfil()" aria-label="Cerrar">
+          <i class="ti ti-x" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      @if (mainStore.user(); as user) {
+        <div class="person-row">
+          <div class="avatar av-blue">{{ iniciales() }}</div>
+          <div>
+            <div class="person-name">{{ user.nombre_completo ?? 'Usuario' }}</div>
+            <div class="person-sub">CI {{ user.cedula_identidad }}</div>
+          </div>
+        </div>
+
+        <div class="row-item">
+          <span class="row-label">Credencial cívica</span>
+          <span class="row-value">{{ user.credencial_civica ?? '—' }}</span>
+        </div>
+
+        @if (mesaContext.mesa(); as mesa) {
+          <div class="row-item">
+            <span class="row-label">Circuito en el que vota</span>
+            <span class="row-value">{{ mesa.numero_circuito }}</span>
+          </div>
+          <div class="row-item">
+            <span class="row-label">Establecimiento</span>
+            <span class="row-value">{{ mesa.establecimiento }}</span>
+          </div>
+        }
+
+        <div class="row-item">
+          <span class="row-label">Rol</span>
+          <span class="row-value" style="display: flex; gap: 6px">
+            @if (user.is_admin) {
+              <span class="badge badge-accent">Administrador</span>
+            }
+            @if (rolEnMesa()) {
+              <span class="badge badge-neutral">{{ rolEnMesa() }}</span>
+            }
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+}
 } @else {
 <router-outlet></router-outlet>
 }

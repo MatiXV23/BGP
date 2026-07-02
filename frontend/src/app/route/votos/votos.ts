@@ -1,57 +1,72 @@
-import { Component } from '@angular/core';
-
-type Papeleta = {
-  id: number;
-  numeroLista: number | null;
-  titulo: string;
-  subtitulo: string;
-  partido: string;
-};
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MainStore } from '../../../shared/stores/main.store';
+import { MesaService } from '../../../shared/services/mesa.service';
+import type { MesaActual, VerificacionVotante, VotoEmitido } from '../../../shared/types/mesa-actual';
 
 @Component({
   selector: 'app-votos',
-  imports: [],
+  imports: [FormsModule],
   templateUrl: './votos.html',
   styleUrl: './votos.css',
 })
-export class Vote {
-  credencialCivica = '';
-  circuitoIngresado = '0101';
+export class Vote implements OnInit {
+  protected readonly mainStore = inject(MainStore);
+  private mesaService = inject(MesaService);
 
-  papeletas: Papeleta[] = [
-    {
-      id: 1,
-      numeroLista: 8001,
-      titulo: 'Lista 8001 — Frente Amplio',
-      subtitulo: 'Junta Departamental · Montevideo',
-      partido: 'Frente Amplio',
-    },
-    {
-      id: 2,
-      numeroLista: 8002,
-      titulo: 'Lista 8002 — Partido Nacional',
-      subtitulo: 'Junta Departamental · Montevideo',
-      partido: 'Partido Nacional',
-    },
-    {
-      id: 3,
-      numeroLista: null,
-      titulo: 'Candidato Intendente FA — Montevideo',
-      subtitulo: 'Candidato a intendente',
-      partido: 'Frente Amplio',
-    },
-    {
-      id: 4,
-      numeroLista: null,
-      titulo: 'Candidato Intendente PN — Montevideo',
-      subtitulo: 'Candidato a intendente',
-      partido: 'Partido Nacional',
-    },
-  ];
+  protected readonly cargando = signal(true);
+  protected readonly mesaVotacion = signal<MesaActual | null>(null);
+  protected readonly errorMesa = signal<string | null>(null);
+
+  // Precompletado con el circuito de mi mesa de votación; editable por si hay que corregirlo.
+  circuitoIngresado = '';
+
+  protected readonly verificando = signal(false);
+  protected readonly verificacion = signal<VerificacionVotante | null>(null);
+  protected readonly errorVerificacion = signal<string | null>(null);
+
+  protected readonly emitiendo = signal(false);
+  protected readonly errorEmision = signal<string | null>(null);
+  protected readonly votoConfirmado = signal<VotoEmitido | null>(null);
 
   papeletasSeleccionadas = new Set<number>();
 
+  async ngOnInit(): Promise<void> {
+    await this.cargarMesaVotacion();
+  }
+
+  private async cargarMesaVotacion(): Promise<void> {
+    this.cargando.set(true);
+    this.errorMesa.set(null);
+
+    try {
+      const mesa = await this.mesaService.getMiaVotacion();
+      this.mesaVotacion.set(mesa);
+      this.circuitoIngresado = mesa.numero_circuito;
+    } catch (e) {
+      this.errorMesa.set(
+        e instanceof HttpErrorResponse && e.status === 404
+          ? 'No estás habilitado para votar en ningún circuito.'
+          : 'No se pudo cargar la información de tu mesa de votación.',
+      );
+    } finally {
+      this.cargando.set(false);
+    }
+  }
+
+  protected get mesaAbierta(): boolean {
+    return this.mesaVotacion()?.estado === 'Abierta';
+  }
+
+  protected get puedeVotar(): boolean {
+    const v = this.verificacion();
+    return this.mesaAbierta && !!v && !v.ya_voto;
+  }
+
   alternarPapeleta(idPapeleta: number): void {
+    if (!this.puedeVotar) return;
+
     if (this.papeletasSeleccionadas.has(idPapeleta)) {
       this.papeletasSeleccionadas.delete(idPapeleta);
     } else {
@@ -71,12 +86,57 @@ export class Vote {
     return this.papeletasSeleccionadas.size;
   }
 
-  emitirVoto(): void {
-    console.log('Emitiendo voto con papeletas:', Array.from(this.papeletasSeleccionadas));
+  async verificarVotante(): Promise<void> {
+    if (!this.mesaAbierta || !this.circuitoIngresado.trim()) return;
+
+    this.verificando.set(true);
+    this.errorVerificacion.set(null);
+    this.verificacion.set(null);
+    this.votoConfirmado.set(null);
+    this.limpiarSeleccion();
+
+    try {
+      this.verificacion.set(await this.mesaService.verificarVotante(this.circuitoIngresado.trim()));
+    } catch (e) {
+      this.errorVerificacion.set(this.mensajeError(e, 'No se pudo verificar tu habilitación para votar'));
+    } finally {
+      this.verificando.set(false);
+    }
   }
 
-  votarEnBlanco(): void {
-    this.limpiarSeleccion();
-    console.log('Emitiendo voto en blanco');
+  async emitirVoto(): Promise<void> {
+    await this.registrarVoto(Array.from(this.papeletasSeleccionadas));
+  }
+
+  async votarEnBlanco(): Promise<void> {
+    await this.registrarVoto([]);
+  }
+
+  private async registrarVoto(idPapeletas: number[]): Promise<void> {
+    if (!this.puedeVotar || this.emitiendo()) return;
+
+    this.emitiendo.set(true);
+    this.errorEmision.set(null);
+
+    try {
+      const resultado = await this.mesaService.emitirVoto(this.circuitoIngresado.trim(), idPapeletas);
+
+      this.votoConfirmado.set(resultado);
+      this.verificacion.set(null);
+      this.limpiarSeleccion();
+
+      await this.cargarMesaVotacion();
+    } catch (e) {
+      this.errorEmision.set(this.mensajeError(e, 'No se pudo emitir el voto'));
+    } finally {
+      this.emitiendo.set(false);
+    }
+  }
+
+  private mensajeError(e: unknown, fallback: string): string {
+    if (e instanceof HttpErrorResponse && typeof e.error?.message === 'string') {
+      return e.error.message;
+    }
+    return fallback;
   }
 }
