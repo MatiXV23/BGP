@@ -1,6 +1,7 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { EleccionService } from '../../../shared/services/elecciones.service';
-import type { Eleccion, ResultadoPapeleta, ResultadosEleccion } from '../../../shared/types/electoral';
+import { TiposEleccionService } from '../../../shared/services/tipos-eleccion.service';
+import type { Eleccion, TipoEleccion } from '../../../shared/types/electoral';
 
 @Component({
   selector: 'app-elecciones',
@@ -9,58 +10,28 @@ import type { Eleccion, ResultadoPapeleta, ResultadosEleccion } from '../../../s
   styleUrl: './elecciones.css',
 })
 export class Elecciones implements OnInit {
-  private eleccionService = inject(EleccionService);
+  private readonly eleccionService = inject(EleccionService);
+  private readonly tiposEleccionService = inject(TiposEleccionService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  protected readonly cargandoElecciones = signal(true);
-  protected readonly elecciones = signal<Eleccion[]>([]);
-  protected readonly errorElecciones = signal<string | null>(null);
+  mostrarFormulario = false;
 
-  protected readonly eleccionSeleccionada = signal<Eleccion | null>(null);
+  elecciones: Eleccion[] = [];
+  eleccionesFiltradas: Eleccion[] = [];
+  tiposEleccion: TipoEleccion[] = [];
 
-  protected readonly cargandoResultados = signal(false);
-  protected readonly resultados = signal<ResultadosEleccion | null>(null);
-  protected readonly errorResultados = signal<string | null>(null);
+  busqueda = '';
+  tipoSeleccionado = '';
 
-  async ngOnInit(): Promise<void> {
-    this.cargandoElecciones.set(true);
-    this.errorElecciones.set(null);
+  cargando = false;
+  errorCarga = '';
 
-    try {
-      const elecciones = await this.eleccionService.getAll();
-      this.elecciones.set(elecciones);
-
-      if (elecciones.length > 0) {
-        await this.seleccionarEleccion(elecciones[0]);
-      }
-    } catch {
-      this.errorElecciones.set('No se pudieron cargar las elecciones.');
-    } finally {
-      this.cargandoElecciones.set(false);
-    }
+  ngOnInit(): void {
+    void this.cargarDatos();
   }
 
-  async seleccionarEleccion(eleccion: Eleccion): Promise<void> {
-    this.eleccionSeleccionada.set(eleccion);
-    this.cargandoResultados.set(true);
-    this.errorResultados.set(null);
-    this.resultados.set(null);
-
-    try {
-      this.resultados.set(await this.eleccionService.getResultados(eleccion.id_eleccion));
-    } catch {
-      this.errorResultados.set('No se pudieron cargar los resultados de esta elección.');
-    } finally {
-      this.cargandoResultados.set(false);
-    }
-  }
-
-  etiquetaPapeleta(p: ResultadoPapeleta): string {
-    const partes = [p.numero_lista ? `Lista ${p.numero_lista}` : null, p.papeleta, p.partido];
-    return partes.filter(Boolean).join(' · ');
-  }
-
-  etiquetaEleccion(eleccion: Eleccion): string {
-    return `${eleccion.fecha} — ${eleccion.descripcion ?? `Elección #${eleccion.id_eleccion}`}`;
+  alternarFormulario(): void {
+    this.mostrarFormulario = !this.mostrarFormulario;
   }
 
   async cargarDatos(): Promise<void> {
