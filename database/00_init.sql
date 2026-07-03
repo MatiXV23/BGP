@@ -346,3 +346,87 @@ GROUP BY
     e.fecha,
     pp.id_partido,
     pp.nombre;
+
+CREATE OR REPLACE VIEW v_votos_por_candidato AS
+SELECT
+    e.id_eleccion,
+    e.fecha,
+    te.nombre AS tipo_eleccion,
+
+    c.cedula_identidad AS cedula_candidato,
+    c.nombre_completo AS candidato,
+
+    pp.id_partido,
+    pp.nombre AS partido,
+
+    p.id_papeleta,
+    p.numero_lista,
+    p.descripcion AS papeleta,
+    p.organo_candidatura,
+
+    cp.tipo_vinculo,
+    cp.orden,
+
+    COUNT(DISTINCT v.id_voto) AS votos_emitidos,
+
+    COUNT(DISTINCT CASE
+        WHEN v.estado = 'Valido' THEN v.id_voto
+    END) AS votos_validos,
+
+    COUNT(DISTINCT CASE
+        WHEN v.estado = 'Anulado' THEN v.id_voto
+    END) AS votos_anulados,
+
+    COUNT(DISTINCT CASE
+        WHEN v.estado = 'Blanco' THEN v.id_voto
+    END) AS votos_blancos,
+
+    COUNT(DISTINCT CASE
+        WHEN v.es_observado = TRUE THEN v.id_voto
+    END) AS votos_observados
+
+FROM (
+    SELECT
+        id_papeleta,
+        cedula_candidato,
+        'Apoyo' AS tipo_vinculo,
+        NULL AS orden
+    FROM papeleta_candidato_apoyo
+
+    UNION
+
+    SELECT
+        id_papeleta,
+        cedula_candidato,
+        'Lista' AS tipo_vinculo,
+        orden
+    FROM lista_integrante
+) cp
+JOIN ciudadano c
+    ON c.cedula_identidad = cp.cedula_candidato
+JOIN papeleta p
+    ON p.id_papeleta = cp.id_papeleta
+JOIN eleccion e
+    ON e.id_eleccion = p.id_eleccion
+JOIN tipo_eleccion te
+    ON te.id_tipo = e.id_tipo
+LEFT JOIN partido_politico pp
+    ON pp.id_partido = p.id_partido
+LEFT JOIN voto_papeleta vp
+    ON vp.id_papeleta = p.id_papeleta
+LEFT JOIN voto v
+    ON v.id_voto = vp.id_voto
+GROUP BY
+    e.id_eleccion,
+    e.fecha,
+    te.nombre,
+    c.cedula_identidad,
+    c.nombre_completo,
+    pp.id_partido,
+    pp.nombre,
+    p.id_papeleta,
+    p.numero_lista,
+    p.descripcion,
+    p.organo_candidatura,
+    cp.tipo_vinculo,
+    cp.orden;

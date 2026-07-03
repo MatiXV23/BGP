@@ -4,6 +4,7 @@ import {
   resultadoEleccionModel,
   votosPorDepartamentoModel,
   votosPorPartidoModel,
+  votosPorCandidatoModel,
 } from "../../models/reporetsModel.js";
 
 const reportesRoutes: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -55,6 +56,23 @@ const reportesRoutes: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async () => {
       return await fastify.ReportesDB.getVotosPorPartido();
+    },
+  );
+
+  fastify.get(
+    "/votos-por-candidato",
+    {
+      schema: {
+        summary: "Obtener votos por candidato",
+        tags: ["Reportes"],
+        description: "Reporte basado en la vista v_votos_por_candidato.",
+        response: {
+          200: Type.Array(votosPorCandidatoModel),
+        },
+      },
+    },
+    async () => {
+      return await fastify.ReportesDB.getVotosPorCandidato();
     },
   );
 };

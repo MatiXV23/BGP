@@ -81,6 +81,13 @@
         >
           Por partido
         </div>
+        <div
+          class="tab"
+          [class.active]="reporteActivo === 'candidato'"
+          (click)="cambiarReporte('candidato')"
+        >
+          Por candidato
+        </div>
       </div>
 
       @if (reporteActivo === 'eleccion') {
@@ -188,6 +195,57 @@
                     <td>{{ item.id_eleccion }}</td>
                     <td>{{ item.fecha }}</td>
                     <td>{{ item.partido }}</td>
+                    <td>{{ item.votos_emitidos }}</td>
+                    <td>{{ item.votos_validos }}</td>
+                    <td>{{ item.votos_anulados }}</td>
+                    <td>{{ item.votos_blancos }}</td>
+                    <td>{{ item.votos_observados }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+      @if (reporteActivo === 'candidato') {
+        @if (votosPorCandidato.length === 0) {
+          <div class="empty-state">No hay votos por candidato para mostrar.</div>
+        } @else {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Elección</th>
+                  <th>Tipo</th>
+                  <th>Candidato</th>
+                  <th>Partido</th>
+                  <th>Papeleta</th>
+                  <th>Lista</th>
+                  <th>Vínculo</th>
+                  <th>Emitidos</th>
+                  <th>Válidos</th>
+                  <th>Anulados</th>
+                  <th>Blancos</th>
+                  <th>Observados</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (
+                  item of votosPorCandidato;
+                  track item.cedula_candidato + '-' + item.id_papeleta
+                ) {
+                  <tr>
+                    <td>{{ item.id_eleccion }}</td>
+                    <td>{{ item.tipo_eleccion }}</td>
+                    <td>{{ item.candidato }}</td>
+                    <td>{{ item.partido || '—' }}</td>
+                    <td>{{ item.papeleta || '—' }}</td>
+                    <td>{{ item.numero_lista || '—' }}</td>
+                    <td>
+                      {{ item.tipo_vinculo }}
+                      {{ item.orden ? ' · Orden ' + item.orden : '' }}
+                    </td>
                     <td>{{ item.votos_emitidos }}</td>
                     <td>{{ item.votos_validos }}</td>
                     <td>{{ item.votos_anulados }}</td>

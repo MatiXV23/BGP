@@ -4,6 +4,7 @@ import {
   ResultadoEleccion,
   VotosPorDepartamento,
   VotosPorPartido,
+  VotosPorCandidato,
 } from '../../../shared/services/reportes.service';
 
 @Component({
@@ -20,7 +21,9 @@ export class Reportes implements OnInit {
   votosPorDepartamento: VotosPorDepartamento[] = [];
   votosPorPartido: VotosPorPartido[] = [];
 
-  reporteActivo: 'eleccion' | 'departamento' | 'partido' = 'eleccion';
+  reporteActivo: 'eleccion' | 'departamento' | 'partido' | 'candidato' = 'eleccion';
+
+  votosPorCandidato: VotosPorCandidato[] = [];
 
   cargando = false;
   errorCarga = '';
@@ -35,15 +38,18 @@ export class Reportes implements OnInit {
     this.cdr.detectChanges();
 
     try {
-      const [resultadosEleccion, votosPorDepartamento, votosPorPartido] = await Promise.all([
-        this.reportesService.getResultadosEleccion(),
-        this.reportesService.getVotosPorDepartamento(),
-        this.reportesService.getVotosPorPartido(),
-      ]);
+      const [resultadosEleccion, votosPorDepartamento, votosPorPartido, votosPorCandidato] =
+        await Promise.all([
+          this.reportesService.getResultadosEleccion(),
+          this.reportesService.getVotosPorDepartamento(),
+          this.reportesService.getVotosPorPartido(),
+          this.reportesService.getVotosPorCandidato(),
+        ]);
 
       this.resultadosEleccion = resultadosEleccion;
       this.votosPorDepartamento = votosPorDepartamento;
       this.votosPorPartido = votosPorPartido;
+      this.votosPorCandidato = votosPorCandidato;
     } catch (error) {
       console.error('Error al cargar reportes', error);
       this.errorCarga = 'No se pudieron cargar los reportes desde el backend.';
@@ -53,7 +59,7 @@ export class Reportes implements OnInit {
     }
   }
 
-  cambiarReporte(reporte: 'eleccion' | 'departamento' | 'partido'): void {
+  cambiarReporte(reporte: 'eleccion' | 'departamento' | 'partido' | 'candidato'): void {
     this.reporteActivo = reporte;
   }
 

@@ -5,6 +5,7 @@ import type {
   VotosPorPartido,
   VotosPorDepartamento,
   ResultadoEleccion,
+  VotosPorCandidato,
 } from "../models/reporetsModel.js";
 
 function normalizarFecha(fecha: unknown): string {
@@ -134,6 +135,65 @@ export class ReportesDB {
       }));
     } catch (error) {
       console.error("Error en ReportesDB.getVotosPorPartido:", error);
+      throw new PC_InternalServerError();
+    }
+  }
+
+  async getVotosPorCandidato(): Promise<VotosPorCandidato[]> {
+    try {
+      const [rows] = await this.pool.query<RowDataPacket[]>(
+        `
+      SELECT
+        id_eleccion,
+        fecha,
+        tipo_eleccion,
+        cedula_candidato,
+        candidato,
+        id_partido,
+        partido,
+        id_papeleta,
+        numero_lista,
+        papeleta,
+        organo_candidatura,
+        tipo_vinculo,
+        orden,
+        votos_emitidos,
+        votos_validos,
+        votos_anulados,
+        votos_blancos,
+        votos_observados
+      FROM v_votos_por_candidato
+      ORDER BY id_eleccion, candidato, id_papeleta
+      `,
+      );
+
+      return rows.map((row) => ({
+        id_eleccion: Number(row.id_eleccion),
+        fecha: normalizarFecha(row.fecha),
+        tipo_eleccion: String(row.tipo_eleccion),
+
+        cedula_candidato: String(row.cedula_candidato),
+        candidato: String(row.candidato),
+
+        id_partido: row.id_partido ?? undefined,
+        partido: row.partido ?? undefined,
+
+        id_papeleta: Number(row.id_papeleta),
+        numero_lista: row.numero_lista ?? undefined,
+        papeleta: row.papeleta ?? undefined,
+        organo_candidatura: row.organo_candidatura ?? undefined,
+
+        tipo_vinculo: String(row.tipo_vinculo),
+        orden: row.orden ?? undefined,
+
+        votos_emitidos: Number(row.votos_emitidos ?? 0),
+        votos_validos: Number(row.votos_validos ?? 0),
+        votos_anulados: Number(row.votos_anulados ?? 0),
+        votos_blancos: Number(row.votos_blancos ?? 0),
+        votos_observados: Number(row.votos_observados ?? 0),
+      }));
+    } catch (error) {
+      console.error("Error en ReportesDB.getVotosPorCandidato:", error);
       throw new PC_InternalServerError();
     }
   }
