@@ -99,7 +99,7 @@ INSERT INTO ciudadano (cedula_identidad, credencial_civica, nombre_completo, fec
   -- Votantes adicionales
   ('12121212', 'AVO1212121', 'Tomás Berro Pacheco',      '1995-06-30'),
   ('21212121', 'AVO2121212', 'Inés Blanco Piñeiro',      '1998-11-15'),
-  -- Integrantes de mesa adicionales, exclusivos de la mesa del circuito 8 (elección 4),
+  -- Integrantes de mesa adicionales, exclusivos de la mesa del circuito 1 (elección 4),
   -- para que ningún ciudadano integre la autoridad de dos mesas distintas en la misma elección
   -- (eso hacía que, al cerrar una, "mi mesa" saltara automáticamente a la otra).
   ('40404040', 'AZA4040404', 'Marcelo Bentos Franco', '1979-02-11'),
@@ -169,8 +169,8 @@ INSERT INTO miembro_mesa (cedula_identidad, id_organismo) VALUES
   ('89012345', 1),
   ('90123456', 1),
   ('01234567', 1),
-  ('40404040', 1), -- exclusivo de la mesa del circuito 8 (elección 4)
-  ('41414141', 1); -- exclusivo de la mesa del circuito 8 (elección 4)
+  ('40404040', 1), -- exclusivo de la mesa del circuito 1 (elección 4)
+  ('41414141', 1); -- exclusivo de la mesa del circuito 1 (elección 4)
 
 -- ------------------------------------------------------------
 -- tipo_eleccion
@@ -216,11 +216,14 @@ INSERT INTO mesa (id_circuito, id_eleccion, ci_presidente, ci_secretario, ci_voc
   (5,  3, '78901234', '89012345', '90123456');
 
 -- Elección 4 – Municipal
+-- El circuito 8 lo preside Ana García Pérez (12345678): es la mesa que administra
+-- de punta a punta en la demo (padrón, votación y cierre), ya que su credencial civica
+-- también está habilitada para votar en ese circuito (ver circuito_credencial).
 INSERT INTO mesa (id_circuito, id_eleccion, ci_presidente, ci_secretario, ci_vocal) VALUES
-  (1,  4, '12345678', '23456789', '34567890'),
+  (1,  4, '01234567', '40404040', '41414141'),
   (3,  4, '45678901', '56789012', '67890123'),
   (4,  4, '78901234', '89012345', '90123456'),
-  (8,  4, '01234567', '40404040', '41414141');
+  (8,  4, '12345678', '23456789', '34567890');
 
 -- ------------------------------------------------------------
 -- Para cerrar una mesa y cambiar su estado
@@ -487,8 +490,8 @@ INSERT INTO circuito_credencial (id_circuito, credencial_civica) VALUES
 -- ------------------------------------------------------------
 -- participacion_votante
 -- ------------------------------------------------------------
--- Mesa 12 (circuito 1, elección 4 — Municipal): presidenta Ana García Pérez,
--- secretario Carlos Rodríguez Silva, vocal María López Torres.
+-- Mesa 12 (circuito 1, elección 4 — Municipal): presidente Andrés Pereyra Lima,
+-- secretario Marcelo Bentos Franco, vocal Silvana Correa Ojeda.
 -- 4 de los 5 votantes habilitados del circuito ya concurrieron.
 INSERT INTO participacion_votante (credencial_civica, id_eleccion, es_observado, id_circuito) VALUES
   ('ABA1234567', 4, FALSE, 1), -- Ana García Pérez
@@ -496,8 +499,8 @@ INSERT INTO participacion_votante (credencial_civica, id_eleccion, es_observado,
   ('ABC3456789', 4, FALSE, 1), -- María López Torres
   ('ACK1111111', 4, TRUE,  1); -- Juan Pedro Sánchez Vidal (observado)
 
--- Mesa 15 (circuito 8, elección 4 — Municipal): presidente Andrés Pereyra Lima,
--- secretaria Marcelo Bentos Franco, vocal Silvana Correa Ojeda.
+-- Mesa 15 (circuito 8, elección 4 — Municipal): presidenta Ana García Pérez,
+-- secretario Carlos Rodríguez Silva, vocal María López Torres.
 -- 4 de los 13 votantes habilitados del circuito ya concurrieron; el resto queda
 -- libre para probar el flujo de "verificar votante" + "emitir voto" desde la app.
 INSERT INTO participacion_votante (credencial_civica, id_eleccion, es_observado, id_circuito) VALUES

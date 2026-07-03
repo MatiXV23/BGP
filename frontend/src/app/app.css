@@ -286,6 +286,22 @@
 .modal-close:hover {
   color: var(--text1);
 }
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 1rem;
+}
+.mesa-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--acc-bg);
+  color: var(--acc-text);
+  font-size: 12px;
+  line-height: 1.4;
+}
 .av-blue {
   background: var(--acc-bg);
   color: var(--acc-text);

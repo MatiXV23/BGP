@@ -181,6 +181,26 @@
       </div>
     </div>
   }
+
+  @if (confirmMensaje(); as mensaje) {
+    <div class="modal-backdrop" (click)="cerrarConfirmacion()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="section-title">Confirmar acción</div>
+          <button class="modal-close" (click)="cerrarConfirmacion()" aria-label="Cerrar">
+            <i class="ti ti-x" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="mesa-note">{{ mensaje }}</div>
+
+        <div class="modal-actions">
+          <button class="btn" (click)="cerrarConfirmacion()">Cancelar</button>
+          <button class="btn btn-danger" (click)="confirmarAccion()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  }
 } @else {
   <router-outlet></router-outlet>
 }

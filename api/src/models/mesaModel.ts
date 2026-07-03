@@ -107,7 +107,11 @@ export const emitirVotoBodyModel = Type.Object({
 });
 export type EmitirVotoBody = Static<typeof emitirVotoBodyModel>;
 
-export const VotoEmitidoEstadoEnum = Type.Union([Type.Literal("Valido"), Type.Literal("Blanco")]);
+export const VotoEmitidoEstadoEnum = Type.Union([
+  Type.Literal("Valido"),
+  Type.Literal("Anulado"),
+  Type.Literal("Blanco"),
+]);
 
 export const emitirVotoResponseModel = Type.Object({
   id_voto: Type.Integer(),

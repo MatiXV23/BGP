@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MainStore } from '../../../shared/stores/main.store';
 import { MesaContextService } from '../../../shared/services/mesa-context.service';
 
@@ -13,6 +13,11 @@ export class Mesa {
   protected readonly mesaContext = inject(MesaContextService);
 
   protected cerrando = false;
+
+  // Modal de confirmación propio (en vez de confirm()/alert() nativos), para que se vea
+  // igual en todos los navegadores en lugar de depender del diálogo del navegador.
+  protected readonly confirmMensaje = signal<string | null>(null);
+  private confirmAccion: (() => void) | null = null;
 
   participacionPct(): number {
     const mesa = this.mesaContext.mesa();
@@ -37,13 +42,16 @@ export class Mesa {
     await this.mesaContext.refresh();
   }
 
-  async cerrarMesa(): Promise<void> {
+  cerrarMesa(): void {
     if (this.cerrando) return;
 
-    const confirmar = confirm('¿Confirmás el cierre de la mesa? Esta acción no se podrá deshacer.');
+    this.pedirConfirmacion(
+      '¿Confirmás el cierre de la mesa? Esta acción no se podrá deshacer.',
+      () => this.confirmarCierreMesa(),
+    );
+  }
 
-    if (!confirmar) return;
-
+  private async confirmarCierreMesa(): Promise<void> {
     this.cerrando = true;
 
     try {
@@ -53,5 +61,21 @@ export class Mesa {
     } finally {
       this.cerrando = false;
     }
+  }
+
+  private pedirConfirmacion(mensaje: string, onConfirm: () => void): void {
+    this.confirmMensaje.set(mensaje);
+    this.confirmAccion = onConfirm;
+  }
+
+  protected confirmarAccion(): void {
+    const accion = this.confirmAccion;
+    this.cerrarConfirmacion();
+    accion?.();
+  }
+
+  protected cerrarConfirmacion(): void {
+    this.confirmMensaje.set(null);
+    this.confirmAccion = null;
   }
 }

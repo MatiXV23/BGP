@@ -106,36 +106,48 @@
             <div class="section-sub">Verificá tu voto para poder elegir papeletas.</div>
           } @else {
             <div class="section-sub">
-              El voto puede contener una o más papeletas según el tipo de elección.
+              El voto puede contener papeletas de más de un organismo, pero elegí como máximo
+              una papeleta por organismo: seleccionar dos para el mismo organismo anula el voto.
             </div>
           }
         </div>
       </div>
 
       <div class="paper-list" [class.paper-list-disabled]="!puedeVotar">
-        @for (papeleta of mesaVotacion()?.papeletas ?? []; track papeleta.id_papeleta) {
-          <label class="paper-option">
-            <input
-              type="checkbox"
-              [checked]="estaSeleccionada(papeleta.id_papeleta)"
-              [disabled]="!puedeVotar"
-              (change)="alternarPapeleta(papeleta.id_papeleta)"
-            />
-
-            <div class="paper-number">
-              {{ papeleta.numero_lista ?? '—' }}
+        @for (grupo of gruposPapeletas(); track grupo.organo) {
+          <div class="paper-group">
+            <div class="paper-group-header">
+              <span class="paper-group-title">{{ grupo.organo }}</span>
+              @if (grupoConSobrevoto(grupo.organo)) {
+                <span class="badge badge-danger">Más de una selección anula el voto</span>
+              }
             </div>
 
-            <div class="paper-info">
-              <div class="paper-title">
-                {{ papeleta.descripcion }}
-              </div>
+            @for (papeleta of grupo.papeletas; track papeleta.id_papeleta) {
+              <label class="paper-option">
+                <input
+                  type="checkbox"
+                  [checked]="estaSeleccionada(papeleta.id_papeleta)"
+                  [disabled]="!puedeVotar"
+                  (change)="alternarPapeleta(papeleta.id_papeleta)"
+                />
 
-              <div class="paper-sub">
-                {{ papeleta.partido }}{{ papeleta.organo_candidatura ? ' · ' + papeleta.organo_candidatura : '' }}
-              </div>
-            </div>
-          </label>
+                <div class="paper-number">
+                  {{ papeleta.numero_lista ?? '—' }}
+                </div>
+
+                <div class="paper-info">
+                  <div class="paper-title">
+                    {{ papeleta.descripcion }}
+                  </div>
+
+                  <div class="paper-sub">
+                    {{ papeleta.partido }}
+                  </div>
+                </div>
+              </label>
+            }
+          </div>
         }
       </div>
 
@@ -152,16 +164,23 @@
         }
 
         @if (votoConfirmado(); as voto) {
-          <div class="notice success">
-            Tu voto quedó registrado ({{ voto.estado === 'Blanco' ? 'en blanco' : 'válido' }}{{ voto.observado ? ', observado' : '' }}).
-          </div>
+          @if (voto.estado === 'Anulado') {
+            <div class="notice danger">
+              Tu voto quedó registrado como <strong>anulado</strong>: seleccionaste más de una
+              papeleta para el mismo cargo{{ voto.observado ? ', y además observado' : '' }}.
+            </div>
+          } @else {
+            <div class="notice success">
+              Tu voto quedó registrado ({{ voto.estado === 'Blanco' ? 'en blanco' : 'válido' }}{{ voto.observado ? ', observado' : '' }}).
+            </div>
+          }
         }
 
         <div class="vote-actions">
           <button
             class="btn btn-primary"
             [disabled]="!puedeVotar || cantidadSeleccionadas() === 0 || emitiendo()"
-            (click)="emitirVoto()"
+            (click)="onClickEmitirVoto()"
           >
             {{ emitiendo() ? 'Emitiendo...' : 'Emitir voto' }}
           </button>
@@ -182,4 +201,30 @@
       </div>
     </div>
   </div>
+
+  @if (mostrarConfirmacionSobrevoto()) {
+    <div class="modal-backdrop" (click)="cancelarConfirmacionSobrevoto()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="section-title">Tu voto quedará anulado</div>
+          <button class="modal-close" (click)="cancelarConfirmacionSobrevoto()" aria-label="Cerrar">
+            <i class="ti ti-x" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="notice danger">
+          Seleccionaste más de una papeleta para el mismo organismo
+          ({{ gruposConSobrevoto().join(', ') }}). Si confirmás, tu voto se registrará como
+          <strong>anulado</strong>.
+        </div>
+
+        <div class="vote-actions" style="margin-top: 12px">
+          <button class="btn" (click)="cancelarConfirmacionSobrevoto()">Volver a elegir</button>
+          <button class="btn btn-primary" (click)="confirmarVotoConSobrevoto()">
+            Confirmar de todos modos
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 }

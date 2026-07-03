@@ -322,6 +322,7 @@ export class MesaDB extends BaseDBRepository<Mesa> {
     return rows[0].id_circuito;
   }
 
+
   // Verifica que el usuario logeado (y solo él, con su propia credencial) pueda votar en su mesa:
   // si ya votó en esta elección y si el circuito ingresado coincide con el asignado por padrón.
   async verificarVotante(
@@ -399,7 +400,23 @@ export class MesaDB extends BaseDBRepository<Mesa> {
         throw err;
       }
 
-      const estado = data.id_papeletas.length === 0 ? "Blanco" : "Valido";
+      let estado: "Valido" | "Anulado" | "Blanco" = data.id_papeletas.length === 0 ? "Blanco" : "Valido";
+
+      if (data.id_papeletas.length > 1) {
+        const [papeletaRows] = await this.pool.query<RowDataPacket[]>(
+          "SELECT organo_candidatura FROM papeleta WHERE id_papeleta IN (?)",
+          [data.id_papeletas],
+        );
+        const conteoPorOrgano = new Map<string, number>();
+        for (const p of papeletaRows) {
+          const clave = p.organo_candidatura ?? "__principal__";
+          conteoPorOrgano.set(clave, (conteoPorOrgano.get(clave) ?? 0) + 1);
+        }
+        // Más de una papeleta para el mismo cargo (mismo organo_candidatura, o ambas
+        // para el cargo principal si organo_candidatura es NULL) es un sobrevoto: se anula.
+        if ([...conteoPorOrgano.values()].some((cantidad) => cantidad > 1)) estado = "Anulado";
+      }
+
       const [votoResult] = await this.pool.query<ResultSetHeader>(
         "INSERT INTO voto (id_circuito, id_eleccion, estado, es_observado) VALUES (?, ?, ?, ?)",
         [mesa.id_circuito, mesa.id_eleccion, estado, observado],

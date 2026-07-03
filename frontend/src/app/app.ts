@@ -46,6 +46,11 @@ export class App {
     this.mostrarPerfil.update((valor) => !valor);
   }
 
+  // Modal de confirmación propio (en vez de confirm()/alert() nativos), para que se vea
+  // igual en todos los navegadores en lugar de depender del diálogo del navegador.
+  protected readonly confirmMensaje = signal<string | null>(null);
+  private confirmAccion: (() => void) | null = null;
+
   constructor() {
     effect(() => {
       if (this.mainStore.token()) {
@@ -56,15 +61,35 @@ export class App {
     });
   }
 
-  async cerrarMesa(): Promise<void> {
-    const confirmar = confirm('¿Confirmás el cierre de la mesa? Esta acción no se podrá deshacer.');
-    if (!confirmar) return;
+  cerrarMesa(): void {
+    this.pedirConfirmacion(
+      '¿Confirmás el cierre de la mesa? Esta acción no se podrá deshacer.',
+      () => this.confirmarCierreMesa(),
+    );
+  }
 
+  private async confirmarCierreMesa(): Promise<void> {
     try {
       await this.mesaContext.cerrarMesa();
     } catch {
       alert('No se pudo cerrar la mesa.');
     }
+  }
+
+  private pedirConfirmacion(mensaje: string, onConfirm: () => void): void {
+    this.confirmMensaje.set(mensaje);
+    this.confirmAccion = onConfirm;
+  }
+
+  protected confirmarAccion(): void {
+    const accion = this.confirmAccion;
+    this.cerrarConfirmacion();
+    accion?.();
+  }
+
+  protected cerrarConfirmacion(): void {
+    this.confirmMensaje.set(null);
+    this.confirmAccion = null;
   }
 
   async logOut(): Promise<void> {

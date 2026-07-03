@@ -66,6 +66,6 @@ export type VerificacionVotante = {
 
 export type VotoEmitido = {
   id_voto: number;
-  estado: 'Valido' | 'Blanco';
+  estado: 'Valido' | 'Anulado' | 'Blanco';
   observado: boolean;
 };

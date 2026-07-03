@@ -3,7 +3,17 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MainStore } from '../../../shared/stores/main.store';
 import { MesaService } from '../../../shared/services/mesa.service';
-import type { MesaActual, VerificacionVotante, VotoEmitido } from '../../../shared/types/mesa-actual';
+import type {
+  MesaActual,
+  PapeletaResultado,
+  VerificacionVotante,
+  VotoEmitido,
+} from '../../../shared/types/mesa-actual';
+
+type GrupoPapeletas = {
+  organo: string;
+  papeletas: PapeletaResultado[];
+};
 
 @Component({
   selector: 'app-votos',
@@ -29,6 +39,8 @@ export class Vote implements OnInit {
   protected readonly emitiendo = signal(false);
   protected readonly errorEmision = signal<string | null>(null);
   protected readonly votoConfirmado = signal<VotoEmitido | null>(null);
+
+  protected readonly mostrarConfirmacionSobrevoto = signal(false);
 
   papeletasSeleccionadas = new Set<number>();
 
@@ -78,6 +90,44 @@ export class Vote implements OnInit {
     return this.papeletasSeleccionadas.has(idPapeleta);
   }
 
+  // Agrupa las papeletas por organismo/cargo (organo_candidatura), usando el tipo de
+  // elección como nombre del cargo principal cuando organo_candidatura es null
+  // (ej: la fórmula presidencial o el candidato a intendente).
+  gruposPapeletas(): GrupoPapeletas[] {
+    const mesa = this.mesaVotacion();
+    if (!mesa) return [];
+
+    const grupos = new Map<string, PapeletaResultado[]>();
+    for (const papeleta of mesa.papeletas) {
+      const organo = papeleta.organo_candidatura ?? mesa.eleccion_tipo;
+      if (!grupos.has(organo)) grupos.set(organo, []);
+      grupos.get(organo)!.push(papeleta);
+    }
+
+    return Array.from(grupos.entries()).map(([organo, papeletas]) => ({ organo, papeletas }));
+  }
+
+  // Organismos para los que se seleccionó más de una papeleta: ese sobrevoto anula el voto.
+  gruposConSobrevoto(): string[] {
+    const mesa = this.mesaVotacion();
+    if (!mesa) return [];
+
+    const conteo = new Map<string, number>();
+    for (const papeleta of mesa.papeletas) {
+      if (!this.papeletasSeleccionadas.has(papeleta.id_papeleta)) continue;
+      const organo = papeleta.organo_candidatura ?? mesa.eleccion_tipo;
+      conteo.set(organo, (conteo.get(organo) ?? 0) + 1);
+    }
+
+    return Array.from(conteo.entries())
+      .filter(([, cantidad]) => cantidad > 1)
+      .map(([organo]) => organo);
+  }
+
+  grupoConSobrevoto(organo: string): boolean {
+    return this.gruposConSobrevoto().includes(organo);
+  }
+
   limpiarSeleccion(): void {
     this.papeletasSeleccionadas.clear();
   }
@@ -104,7 +154,24 @@ export class Vote implements OnInit {
     }
   }
 
-  async emitirVoto(): Promise<void> {
+  onClickEmitirVoto(): void {
+    if (this.gruposConSobrevoto().length > 0) {
+      this.mostrarConfirmacionSobrevoto.set(true);
+      return;
+    }
+    void this.emitirVoto();
+  }
+
+  confirmarVotoConSobrevoto(): void {
+    this.mostrarConfirmacionSobrevoto.set(false);
+    void this.emitirVoto();
+  }
+
+  cancelarConfirmacionSobrevoto(): void {
+    this.mostrarConfirmacionSobrevoto.set(false);
+  }
+
+  private async emitirVoto(): Promise<void> {
     await this.registrarVoto(Array.from(this.papeletasSeleccionadas));
   }
 
