@@ -6,6 +6,8 @@ import { Component } from '@angular/core';
   templateUrl: './ciudadanos.html',
   styleUrl: './ciudadanos.css',
 })
+
+//hola
 export class Ciudadanos {
   mostrarFormulario = false;
 
