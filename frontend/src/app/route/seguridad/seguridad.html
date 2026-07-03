@@ -3,82 +3,47 @@
     <div>
       <div class="section-title">Seguridad</div>
       <div class="section-sub">
-        Control de roles, permisos y acciones sensibles del sistema electoral
+        Control de usuarios, miembros de mesa, agentes policiales y organismos asociados
       </div>
     </div>
 
-    <button class="btn btn-primary" (click)="alternarFormulario()">Nueva regla de seguridad</button>
+    <button class="btn btn-primary" (click)="cargarDatos()">Recargar</button>
   </div>
 
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Usuarios</div>
-      <div class="stat-value">—</div>
-      <div class="stat-detail">Pendiente de backend</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Roles</div>
-      <div class="stat-value">—</div>
-      <div class="stat-detail">Pendiente de backend</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Agentes asignados</div>
-      <div class="stat-value">—</div>
-      <div class="stat-detail">Pendiente de backend</div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-label">Eventos sensibles</div>
-      <div class="stat-value">—</div>
-      <div class="stat-detail">Pendiente de backend</div>
-    </div>
-  </div>
-
-  @if (mostrarFormulario) {
+  @if (cargando) {
     <div class="card">
-      <div class="section-header">
-        <div>
-          <div class="section-title">Regla de seguridad</div>
-          <div class="section-sub">
-            Formulario preparado para configurar permisos en una etapa posterior
-          </div>
-        </div>
+      <div class="empty-state">Cargando datos de seguridad...</div>
+    </div>
+  } @else if (errorCarga) {
+    <div class="card">
+      <div class="empty-state error-state">
+        {{ errorCarga }}
+      </div>
+    </div>
+  } @else {
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Usuarios</div>
+        <div class="stat-value">—</div>
+        <div class="stat-detail">Consulta protegida por permisos</div>
       </div>
 
-      <div class="form-grid">
-        <label class="form-field">
-          <span>Rol</span>
-          <select>
-            <option value="">Seleccionar rol</option>
-            <option>Administrador</option>
-            <option>Presidente de mesa</option>
-            <option>Funcionario electoral</option>
-            <option>Agente policial</option>
-          </select>
-        </label>
-
-        <label class="form-field">
-          <span>Acción</span>
-          <select>
-            <option value="">Seleccionar acción</option>
-            <option>Emitir voto</option>
-            <option>Cerrar mesa</option>
-            <option>Ver resultados</option>
-            <option>Gestionar ciudadanos</option>
-          </select>
-        </label>
-
-        <label class="form-field form-field-wide">
-          <span>Descripción</span>
-          <input type="text" placeholder="Descripción de la regla o permiso" />
-        </label>
+      <div class="stat-card">
+        <div class="stat-label">Miembros de mesa</div>
+        <div class="stat-value">{{ cantidadMiembrosMesa }}</div>
+        <div class="stat-detail">Autoridades asignadas a mesas</div>
       </div>
 
-      <div class="form-actions">
-        <button class="btn btn-primary">Guardar regla</button>
-        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+      <div class="stat-card">
+        <div class="stat-label">Agentes policiales</div>
+        <div class="stat-value">{{ cantidadAgentesPoliciales }}</div>
+        <div class="stat-detail">Personal de seguridad registrado</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Comisarías</div>
+        <div class="stat-value">{{ cantidadComisarias }}</div>
+        <div class="stat-detail">Dependencias policiales cargadas</div>
       </div>
     </div>
   }
@@ -88,14 +53,15 @@
       <div class="section-header">
         <div>
           <div class="section-title">Roles y permisos</div>
-          <div class="section-sub">Accesos permitidos para cada tipo de usuario</div>
+          <div class="section-sub">Accesos permitidos para cada tipo de usuario del sistema</div>
         </div>
 
-        <span class="field-tag">Pendiente de conexión</span>
+        <span class="field-tag">Pendiente</span>
       </div>
 
       <div class="empty-state">
-        Esta sección se conectará con usuarios, roles y permisos del backend.
+        La consulta de usuarios está protegida por permisos. Más adelante podemos mostrar usuarios y
+        roles cuando se defina el acceso de administrador.
       </div>
     </div>
 
@@ -103,15 +69,36 @@
       <div class="section-header">
         <div>
           <div class="section-title">Agentes policiales</div>
-          <div class="section-sub">Asignación de seguridad a establecimientos o circuitos</div>
+          <div class="section-sub">
+            Personal de seguridad registrado para el operativo electoral
+          </div>
         </div>
 
-        <span class="field-tag">Pendiente de conexión</span>
+        <span class="field-tag">Conectado a backend</span>
       </div>
 
       <div class="empty-state">
-        Esta sección se conectará con los agentes policiales registrados en la base de datos.
+        Hay {{ cantidadAgentesPoliciales }} agentes policiales y {{ cantidadComisarias }} comisarías
+        cargadas en el sistema.
       </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Organismos del Estado</div>
+        <div class="section-sub">
+          Organismos relacionados con autoridades, seguridad o administración electoral
+        </div>
+      </div>
+
+      <span class="field-tag">Conectado a backend</span>
+    </div>
+
+    <div class="empty-state">
+      Organismos registrados: {{ cantidadOrganismosEstado }}. Esta sección podrá ampliarse más
+      adelante con una tabla detallada.
     </div>
   </div>
 
@@ -124,7 +111,7 @@
         </div>
       </div>
 
-      <span class="field-tag">Pendiente de conexión</span>
+      <span class="field-tag">Pendiente</span>
     </div>
 
     <div class="empty-state">

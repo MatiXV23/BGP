@@ -7,7 +7,7 @@ import type { TipoEleccion, TipoEleccionPost } from '../types/electoral';
 @Injectable({ providedIn: 'root' })
 export class TiposEleccionService {
   private httpClient = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/tipos-eleccion`;
+  private readonly base = `${environment.apiUrl}/tipo_eleccion`;
 
   public async getAll(): Promise<TipoEleccion[]> {
     return await firstValueFrom(this.httpClient.get<TipoEleccion[]>(this.base));

@@ -11,18 +11,42 @@
   <div class="card">
     <div class="section-header">
       <div>
-        <div class="section-title">Elección activa</div>
+        <div class="section-title">Elección de referencia</div>
         <div class="section-sub">
-          Esta sección indicará qué elección se encuentra actualmente seleccionada para operar
+          Se muestra la elección más reciente cargada en la base de datos
         </div>
       </div>
 
-      <span class="field-tag">Pendiente de conexión</span>
+      <span class="field-tag">Conectado a backend</span>
     </div>
 
-    <div class="empty-state">
-      La elección activa se cargará desde la base de datos cuando se conecte el backend.
-    </div>
+    @if (obtenerEleccionPrincipal()) {
+      <div class="row-item">
+        <span class="row-label">ID</span>
+        <span class="row-value">{{ obtenerEleccionPrincipal()?.id_eleccion }}</span>
+      </div>
+
+      <div class="row-item">
+        <span class="row-label">Tipo</span>
+        <span class="row-value">
+          {{ obtenerNombreTipo(obtenerEleccionPrincipal()!.id_tipo) }}
+        </span>
+      </div>
+
+      <div class="row-item">
+        <span class="row-label">Fecha</span>
+        <span class="row-value">{{ obtenerEleccionPrincipal()?.fecha }}</span>
+      </div>
+
+      <div class="row-item">
+        <span class="row-label">Descripción</span>
+        <span class="row-value">
+          {{ obtenerEleccionPrincipal()?.descripcion || 'Sin descripción' }}
+        </span>
+      </div>
+    } @else {
+      <div class="empty-state">No hay elecciones cargadas.</div>
+    }
   </div>
 
   @if (mostrarFormulario) {
@@ -30,7 +54,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Alta de elección</div>
-          <div class="section-sub">Formulario preparado para crear una elección en el sistema</div>
+          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
         </div>
       </div>
 
@@ -39,12 +63,12 @@
           <span>Tipo de elección</span>
           <select>
             <option value="">Seleccionar tipo</option>
-            <option value="Municipal">Municipal</option>
-            <option value="Presidencial">Presidencial</option>
-            <option value="Ballotage">Ballotage</option>
-            <option value="Plebiscito">Plebiscito</option>
-            <option value="Referendum">Referéndum</option>
-            <option value="Interna">Interna</option>
+
+            @for (tipo of tiposEleccion; track tipo.id_tipo) {
+              <option [value]="tipo.id_tipo">
+                {{ tipo.nombre }}
+              </option>
+            }
           </select>
         </label>
 
@@ -70,40 +94,72 @@
     <div class="section-header">
       <div>
         <div class="section-title">Listado de elecciones</div>
-        <div class="section-sub">
-          Esta sección luego consumirá el servicio de elecciones del backend
-        </div>
+        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
       </div>
 
-      <span class="field-tag">Pendiente de conexión</span>
+      <span class="field-tag">Conectado a backend</span>
     </div>
 
     <div class="filters-row">
       <label class="form-field">
         <span>Buscar</span>
-        <input type="text" placeholder="Buscar por descripción o tipo" />
+        <input
+          type="text"
+          placeholder="Buscar por ID, fecha, descripción o tipo"
+          [value]="busqueda"
+          (input)="actualizarBusqueda($any($event.target).value)"
+        />
       </label>
 
       <label class="form-field">
         <span>Tipo</span>
-        <select>
+        <select [value]="tipoSeleccionado" (change)="actualizarTipo($any($event.target).value)">
           <option value="">Todos</option>
-          <option value="Municipal">Municipal</option>
-          <option value="Presidencial">Presidencial</option>
-          <option value="Ballotage">Ballotage</option>
-          <option value="Plebiscito">Plebiscito</option>
-          <option value="Referendum">Referéndum</option>
-          <option value="Interna">Interna</option>
+
+          @for (tipo of tiposEleccion; track tipo.id_tipo) {
+            <option [value]="tipo.id_tipo">
+              {{ tipo.nombre }}
+            </option>
+          }
         </select>
       </label>
 
-      <button class="btn">Filtrar</button>
+      <button class="btn" (click)="cargarDatos()">Recargar</button>
     </div>
 
-    <div class="empty-state">
-      Todavía no se están cargando elecciones desde la base de datos. Esta tabla quedará conectada
-      al servicio correspondiente más adelante.
-    </div>
+    @if (cargando) {
+      <div class="empty-state">Cargando elecciones...</div>
+    } @else if (errorCarga) {
+      <div class="empty-state error-state">
+        {{ errorCarga }}
+      </div>
+    } @else if (eleccionesFiltradas.length === 0) {
+      <div class="empty-state">No hay elecciones para mostrar.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (eleccion of eleccionesFiltradas; track eleccion.id_eleccion) {
+              <tr>
+                <td>{{ eleccion.id_eleccion }}</td>
+                <td>{{ obtenerNombreTipo(eleccion.id_tipo) }}</td>
+                <td>{{ eleccion.fecha }}</td>
+                <td>{{ eleccion.descripcion || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 
   <div class="two-col">
@@ -115,7 +171,29 @@
         </div>
       </div>
 
-      <div class="empty-state">Esta sección se conectará con la tabla tipo_eleccion.</div>
+      @if (tiposEleccion.length === 0) {
+        <div class="empty-state">No hay tipos de elección cargados.</div>
+      } @else {
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (tipo of tiposEleccion; track tipo.id_tipo) {
+                <tr>
+                  <td>{{ tipo.id_tipo }}</td>
+                  <td>{{ tipo.nombre }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
 
     <div class="card">
@@ -128,7 +206,7 @@
         </div>
       </div>
 
-      <div class="empty-state">Esta sección se conectará con la tabla papeleta.</div>
+      <div class="empty-state">Esta sección se conectará más adelante con la tabla papeleta.</div>
     </div>
   </div>
 </div>

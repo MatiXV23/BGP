@@ -13,9 +13,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Alta de departamento</div>
-          <div class="section-sub">
-            Formulario preparado para conectar luego con la base de datos
-          </div>
+          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
         </div>
       </div>
 
@@ -42,27 +40,55 @@
     <div class="section-header">
       <div>
         <div class="section-title">Listado de departamentos</div>
-        <div class="section-sub">
-          Esta sección luego consumirá el servicio de departamentos del backend
-        </div>
+        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
       </div>
 
-      <span class="field-tag">Pendiente de conexión</span>
+      <span class="field-tag">Conectado a backend</span>
     </div>
 
     <div class="filters-row">
       <label class="form-field">
         <span>Buscar</span>
-        <input type="text" placeholder="Buscar por nombre o código" />
+        <input
+          type="text"
+          placeholder="Buscar por nombre"
+          [value]="busqueda"
+          (input)="actualizarBusqueda($any($event.target).value)"
+        />
       </label>
 
-      <button class="btn">Filtrar</button>
+      <button class="btn" (click)="cargarDepartamentos()">Recargar</button>
     </div>
 
-    <div class="empty-state">
-      Todavía no se están cargando departamentos desde la base de datos. Esta tabla quedará
-      conectada al servicio correspondiente más adelante.
-    </div>
+    @if (cargando) {
+      <div class="empty-state">Cargando departamentos...</div>
+    } @else if (errorCarga) {
+      <div class="empty-state error-state">
+        {{ errorCarga }}
+      </div>
+    } @else if (departamentosFiltrados.length === 0) {
+      <div class="empty-state">No hay departamentos para mostrar.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Departamento</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (departamento of departamentosFiltrados; track departamento.id_departamento) {
+              <tr>
+                <td>{{ departamento.id_departamento }}</td>
+                <td>{{ departamento.nombre }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 
   <div class="two-col">
@@ -77,7 +103,7 @@
       </div>
 
       <div class="empty-state">
-        Esta sección se conectará con los circuitos asociados al departamento.
+        Esta sección se conectará más adelante con los circuitos asociados al departamento.
       </div>
     </div>
 
@@ -90,7 +116,7 @@
       </div>
 
       <div class="empty-state">
-        Esta sección se conectará con los establecimientos asociados al departamento.
+        Esta sección se conectará más adelante con los establecimientos asociados al departamento.
       </div>
     </div>
   </div>
@@ -104,8 +130,7 @@
     </div>
 
     <div class="empty-state">
-      Esta sección podrá usar la vista de resultados por departamento cuando el backend esté
-      conectado.
+      Esta sección podrá usar la vista de resultados por departamento cuando conectemos reportes.
     </div>
   </div>
 </div>

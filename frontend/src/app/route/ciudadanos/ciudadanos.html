@@ -13,9 +13,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Alta de ciudadano</div>
-          <div class="section-sub">
-            Formulario preparado para conectar luego con la base de datos
-          </div>
+          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
         </div>
       </div>
 
@@ -52,26 +50,58 @@
     <div class="section-header">
       <div>
         <div class="section-title">Listado de ciudadanos</div>
-        <div class="section-sub">
-          Esta sección luego consumirá el servicio de ciudadanos del backend
-        </div>
+        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
       </div>
 
-      <span class="field-tag">Pendiente de conexión</span>
+      <span class="field-tag">Conectado a backend</span>
     </div>
 
     <div class="filters-row">
       <label class="form-field">
         <span>Buscar</span>
-        <input type="text" placeholder="Buscar por CI, credencial o nombre" />
+        <input
+          type="text"
+          placeholder="Buscar por cédula, credencial o nombre"
+          [value]="busqueda"
+          (input)="actualizarBusqueda($any($event.target).value)"
+        />
       </label>
 
-      <button class="btn">Filtrar</button>
+      <button class="btn" (click)="cargarCiudadanos()">Recargar</button>
     </div>
 
-    <div class="empty-state">
-      Todavía no se están cargando ciudadanos desde la base de datos. Esta tabla quedará conectada
-      al servicio correspondiente más adelante.
-    </div>
+    @if (cargando) {
+      <div class="empty-state">Cargando ciudadanos...</div>
+    } @else if (errorCarga) {
+      <div class="empty-state error-state">
+        {{ errorCarga }}
+      </div>
+    } @else if (ciudadanosFiltrados.length === 0) {
+      <div class="empty-state">No hay ciudadanos para mostrar.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Credencial cívica</th>
+              <th>Nombre completo</th>
+              <th>Fecha de nacimiento</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (ciudadano of ciudadanosFiltrados; track ciudadano.cedula_identidad) {
+              <tr>
+                <td>{{ ciudadano.cedula_identidad }}</td>
+                <td>{{ ciudadano.credencial_civica }}</td>
+                <td>{{ ciudadano.nombre_completo }}</td>
+                <td>{{ ciudadano.fecha_nacimiento }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 </div>

@@ -13,9 +13,7 @@
       <div class="section-header">
         <div>
           <div class="section-title">Alta de circuito</div>
-          <div class="section-sub">
-            Formulario preparado para conectar luego con la base de datos
-          </div>
+          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
         </div>
       </div>
 
@@ -26,13 +24,13 @@
         </label>
 
         <label class="form-field">
-          <span>Departamento</span>
-          <input type="text" placeholder="Seleccionar departamento" />
+          <span>ID departamento</span>
+          <input type="number" placeholder="Ej: 15" />
         </label>
 
         <label class="form-field">
-          <span>Establecimiento</span>
-          <input type="text" placeholder="Seleccionar establecimiento" />
+          <span>ID establecimiento</span>
+          <input type="number" placeholder="Ej: 1" />
         </label>
 
         <label class="form-field">
@@ -66,32 +64,71 @@
     <div class="section-header">
       <div>
         <div class="section-title">Listado de circuitos</div>
-        <div class="section-sub">
-          Esta sección luego consumirá el servicio de circuitos del backend
-        </div>
+        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
       </div>
 
-      <span class="field-tag">Pendiente de conexión</span>
+      <span class="field-tag">Conectado a backend</span>
     </div>
 
     <div class="filters-row">
       <label class="form-field">
         <span>Buscar</span>
-        <input type="text" placeholder="Buscar por número, localidad o establecimiento" />
+        <input
+          type="text"
+          placeholder="Buscar por número, localidad, barrio, departamento o establecimiento"
+          [value]="busqueda"
+          (input)="actualizarBusqueda($any($event.target).value)"
+        />
       </label>
 
-      <label class="form-field">
-        <span>Departamento</span>
-        <input type="text" placeholder="Filtrar por departamento" />
-      </label>
-
-      <button class="btn">Filtrar</button>
+      <button class="btn" (click)="cargarCircuitos()">Recargar</button>
     </div>
 
-    <div class="empty-state">
-      Todavía no se están cargando circuitos desde la base de datos. Esta tabla quedará conectada al
-      servicio correspondiente más adelante.
-    </div>
+    @if (cargando) {
+      <div class="empty-state">Cargando circuitos...</div>
+    } @else if (errorCarga) {
+      <div class="empty-state error-state">
+        {{ errorCarga }}
+      </div>
+    } @else if (circuitosFiltrados.length === 0) {
+      <div class="empty-state">No hay circuitos para mostrar.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Número</th>
+              <th>Departamento</th>
+              <th>Establecimiento</th>
+              <th>Localidad</th>
+              <th>Barrio/Zona</th>
+              <th>Accesible</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (circuito of circuitosFiltrados; track circuito.id_circuito) {
+              <tr>
+                <td>{{ circuito.id_circuito }}</td>
+                <td>{{ circuito.numero }}</td>
+                <td>{{ circuito.id_departamento }}</td>
+                <td>{{ circuito.id_establecimiento }}</td>
+                <td>{{ circuito.localidad }}</td>
+                <td>{{ circuito.barrio_zona || '—' }}</td>
+                <td>
+                  @if (circuito.es_accesible) {
+                    <span class="badge badge-success">Sí</span>
+                  } @else {
+                    <span class="badge badge-warning">No</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
   </div>
 
   <div class="two-col">
@@ -103,7 +140,9 @@
         </div>
       </div>
 
-      <div class="empty-state">Esta sección se conectará con la tabla circuito_credencial.</div>
+      <div class="empty-state">
+        Esta sección se conectará más adelante con la tabla circuito_credencial.
+      </div>
     </div>
 
     <div class="card">
@@ -114,7 +153,7 @@
         </div>
       </div>
 
-      <div class="empty-state">Esta sección se conectará con la tabla mesa.</div>
+      <div class="empty-state">Esta sección se conectará más adelante con la tabla mesa.</div>
     </div>
   </div>
 </div>

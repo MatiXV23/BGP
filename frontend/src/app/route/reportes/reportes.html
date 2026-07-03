@@ -2,147 +2,236 @@
   <div class="reportes-header">
     <div>
       <div class="section-title">Reportes</div>
-      <div class="section-sub">Consulta y generación de informes del proceso electoral</div>
-    </div>
-
-    <span class="field-tag">Pendiente de conexión</span>
-  </div>
-
-  <div class="card">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Filtros del reporte</div>
-        <div class="section-sub">
-          Seleccioná los criterios para consultar la información electoral
-        </div>
+      <div class="section-sub">
+        Consulta de resultados electorales generados desde las vistas de la base de datos
       </div>
     </div>
 
-    <div class="form-grid">
-      <label class="form-field">
-        <span>Elección</span>
-        <select>
-          <option value="">Seleccionar elección</option>
-        </select>
-      </label>
-
-      <label class="form-field">
-        <span>Departamento</span>
-        <select>
-          <option value="">Todos los departamentos</option>
-        </select>
-      </label>
-
-      <label class="form-field">
-        <span>Tipo de reporte</span>
-        <select>
-          <option value="">Seleccionar tipo</option>
-          <option value="departamento">Votos por departamento</option>
-          <option value="partido">Votos por partido</option>
-          <option value="papeleta">Votos por papeleta</option>
-          <option value="participacion">Participación electoral</option>
-          <option value="observados">Votos observados</option>
-        </select>
-      </label>
-
-      <label class="form-field">
-        <span>Estado del voto</span>
-        <select>
-          <option value="">Todos</option>
-          <option value="valido">Válidos</option>
-          <option value="anulado">Anulados</option>
-          <option value="blanco">Blancos</option>
-          <option value="observado">Observados</option>
-        </select>
-      </label>
-    </div>
-
-    <div class="form-actions">
-      <button class="btn btn-primary" (click)="generarReporte()">Generar reporte</button>
-
-      <button class="btn" (click)="limpiarReporte()">Limpiar</button>
-    </div>
+    <button class="btn btn-primary" (click)="cargarReportes()">Recargar</button>
   </div>
 
-  @if (!reporteGenerado) {
+  @if (cargando) {
     <div class="card">
-      <div class="empty-state">
-        Seleccioná los filtros y generá un reporte. Los datos se cargarán desde el backend cuando se
-        conecten los servicios correspondientes.
+      <div class="empty-state">Cargando reportes...</div>
+    </div>
+  } @else if (errorCarga) {
+    <div class="card">
+      <div class="empty-state error-state">
+        {{ errorCarga }}
       </div>
     </div>
-  }
-
-  @if (reporteGenerado) {
+  } @else {
     <div class="stat-grid">
       <div class="stat-card">
-        <div class="stat-label">Total de votos</div>
-        <div class="stat-value">—</div>
-        <div class="stat-detail">Pendiente de backend</div>
+        <div class="stat-label">Votos emitidos</div>
+        <div class="stat-value">{{ totalEmitidos() }}</div>
+        <div class="stat-detail">Según resultados por papeleta</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-label">Votos válidos</div>
-        <div class="stat-value">—</div>
-        <div class="stat-detail">Pendiente de backend</div>
+        <div class="stat-value">{{ totalValidos() }}</div>
+        <div class="stat-detail">Votos contabilizados como válidos</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Votos anulados</div>
+        <div class="stat-value">{{ totalAnulados() }}</div>
+        <div class="stat-detail">Votos registrados como anulados</div>
       </div>
 
       <div class="stat-card">
         <div class="stat-label">Votos observados</div>
-        <div class="stat-value">—</div>
-        <div class="stat-detail">Pendiente de backend</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-label">Participación</div>
-        <div class="stat-value">—</div>
-        <div class="stat-detail">Pendiente de backend</div>
-      </div>
-    </div>
-
-    <div class="two-col">
-      <div class="card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Reporte por departamento</div>
-            <div class="section-sub">Preparado para usar la vista de votos por departamento</div>
-          </div>
-        </div>
-
-        <div class="empty-state">Acá se mostrarán los votos agrupados por departamento.</div>
-      </div>
-
-      <div class="card">
-        <div class="section-header">
-          <div>
-            <div class="section-title">Reporte por partido</div>
-            <div class="section-sub">Preparado para usar la vista de votos por partido</div>
-          </div>
-        </div>
-
-        <div class="empty-state">Acá se mostrarán los votos agrupados por partido político.</div>
+        <div class="stat-value">{{ totalObservados() }}</div>
+        <div class="stat-detail">Votos marcados como observados</div>
       </div>
     </div>
 
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Detalle del reporte</div>
-          <div class="section-sub">
-            Tabla preparada para mostrar resultados detallados de la consulta
-          </div>
+          <div class="section-title">Tipo de reporte</div>
+          <div class="section-sub">Seleccioná qué vista de resultados querés consultar</div>
         </div>
 
-        <div class="report-actions">
-          <button class="btn">Exportar PDF</button>
-          <button class="btn">Exportar CSV</button>
+        <span class="field-tag">Conectado a backend</span>
+      </div>
+
+      <div class="tab-bar">
+        <div
+          class="tab"
+          [class.active]="reporteActivo === 'eleccion'"
+          (click)="cambiarReporte('eleccion')"
+        >
+          Por papeleta
+        </div>
+
+        <div
+          class="tab"
+          [class.active]="reporteActivo === 'departamento'"
+          (click)="cambiarReporte('departamento')"
+        >
+          Por departamento
+        </div>
+
+        <div
+          class="tab"
+          [class.active]="reporteActivo === 'partido'"
+          (click)="cambiarReporte('partido')"
+        >
+          Por partido
         </div>
       </div>
 
-      <div class="empty-state">
-        El detalle del reporte se cargará desde la base de datos. Esta sección podrá mostrar
-        columnas como departamento, partido, papeleta, votos válidos, anulados, blancos y
-        observados.
+      @if (reporteActivo === 'eleccion') {
+        @if (resultadosEleccion.length === 0) {
+          <div class="empty-state">No hay resultados por papeleta para mostrar.</div>
+        } @else {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Elección</th>
+                  <th>Tipo</th>
+                  <th>Papeleta</th>
+                  <th>Lista</th>
+                  <th>Partido</th>
+                  <th>Emitidos</th>
+                  <th>Válidos</th>
+                  <th>Anulados</th>
+                  <th>Blancos</th>
+                  <th>Observados</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (resultado of resultadosEleccion; track resultado.id_papeleta) {
+                  <tr>
+                    <td>{{ resultado.id_eleccion }}</td>
+                    <td>{{ resultado.tipo_eleccion }}</td>
+                    <td>{{ resultado.papeleta || '—' }}</td>
+                    <td>{{ resultado.numero_lista || '—' }}</td>
+                    <td>{{ resultado.partido || '—' }}</td>
+                    <td>{{ resultado.votos_emitidos }}</td>
+                    <td>{{ resultado.votos_validos }}</td>
+                    <td>{{ resultado.votos_anulados }}</td>
+                    <td>{{ resultado.votos_blancos }}</td>
+                    <td>{{ resultado.votos_observados }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (reporteActivo === 'departamento') {
+        @if (votosPorDepartamento.length === 0) {
+          <div class="empty-state">No hay votos por departamento para mostrar.</div>
+        } @else {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Elección</th>
+                  <th>Fecha</th>
+                  <th>Departamento</th>
+                  <th>Emitidos</th>
+                  <th>Válidos</th>
+                  <th>Anulados</th>
+                  <th>Blancos</th>
+                  <th>Observados</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (item of votosPorDepartamento; track item.id_departamento) {
+                  <tr>
+                    <td>{{ item.id_eleccion }}</td>
+                    <td>{{ item.fecha }}</td>
+                    <td>{{ item.departamento }}</td>
+                    <td>{{ item.votos_emitidos }}</td>
+                    <td>{{ item.votos_validos }}</td>
+                    <td>{{ item.votos_anulados }}</td>
+                    <td>{{ item.votos_blancos }}</td>
+                    <td>{{ item.votos_observados }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+      @if (reporteActivo === 'partido') {
+        @if (votosPorPartido.length === 0) {
+          <div class="empty-state">No hay votos por partido para mostrar.</div>
+        } @else {
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Elección</th>
+                  <th>Fecha</th>
+                  <th>Partido</th>
+                  <th>Emitidos</th>
+                  <th>Válidos</th>
+                  <th>Anulados</th>
+                  <th>Blancos</th>
+                  <th>Observados</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                @for (item of votosPorPartido; track item.id_partido) {
+                  <tr>
+                    <td>{{ item.id_eleccion }}</td>
+                    <td>{{ item.fecha }}</td>
+                    <td>{{ item.partido }}</td>
+                    <td>{{ item.votos_emitidos }}</td>
+                    <td>{{ item.votos_validos }}</td>
+                    <td>{{ item.votos_anulados }}</td>
+                    <td>{{ item.votos_blancos }}</td>
+                    <td>{{ item.votos_observados }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Vistas utilizadas</div>
+            <div class="section-sub">Reportes obtenidos directamente desde la base de datos</div>
+          </div>
+
+          <span class="field-tag">SQL Views</span>
+        </div>
+
+        <div class="empty-state">
+          Se consumen las vistas v_resultados_eleccion, v_votos_por_departamento y
+          v_votos_por_partido.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Exportación</div>
+            <div class="section-sub">Espacio preparado para futuras exportaciones</div>
+          </div>
+
+          <span class="field-tag">Pendiente</span>
+        </div>
+
+        <div class="empty-state">
+          Más adelante se podrían agregar botones para exportar los reportes a PDF o CSV.
+        </div>
       </div>
     </div>
   }

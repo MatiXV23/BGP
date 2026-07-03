@@ -71,6 +71,11 @@ export const routes: Routes = [
     loadComponent: () => import('./route/configuracion/configuracion').then((m) => m.Configuracion),
   },
   {
+    path: 'papeletas',
+    canActivate: [isLoggedGuard],
+    loadComponent: () => import('./route/papeletas/papeletas').then((m) => m.Papeletas),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

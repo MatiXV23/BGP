@@ -1,0 +1,184 @@
+<div class="content">
+  <div class="papeletas-header">
+    <div>
+      <div class="section-title">Papeletas</div>
+      <div class="section-sub">
+        Gestión de listas, fórmulas y opciones de votación asociadas a una elección
+      </div>
+    </div>
+
+    <button class="btn btn-primary" (click)="alternarFormulario()">Nueva papeleta</button>
+  </div>
+
+  @if (mostrarFormulario) {
+    <div class="card">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Alta de papeleta</div>
+          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <label class="form-field">
+          <span>Elección</span>
+          <select>
+            <option value="">Seleccionar elección</option>
+
+            @for (eleccion of elecciones; track eleccion.id_eleccion) {
+              <option [value]="eleccion.id_eleccion">
+                {{ eleccion.descripcion || 'Elección ' + eleccion.id_eleccion }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Partido político</span>
+          <select>
+            <option value="">Seleccionar partido</option>
+
+            @for (partido of partidos; track partido.id_partido) {
+              <option [value]="partido.id_partido">
+                {{ partido.nombre }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Número de lista</span>
+          <input type="number" placeholder="Ej: 8001" />
+        </label>
+
+        <label class="form-field">
+          <span>Departamento</span>
+          <select>
+            <option value="">Nacional / sin departamento</option>
+
+            @for (departamento of departamentos; track departamento.id_departamento) {
+              <option [value]="departamento.id_departamento">
+                {{ departamento.nombre }}
+              </option>
+            }
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Órgano de candidatura</span>
+          <select>
+            <option value="">Seleccionar órgano</option>
+            <option value="Senadores">Senadores</option>
+            <option value="Diputados">Diputados</option>
+            <option value="Junta Departamental">Junta Departamental</option>
+            <option value="Concejo Municipal">Concejo Municipal</option>
+          </select>
+        </label>
+
+        <label class="form-field">
+          <span>Color</span>
+          <input type="text" placeholder="Ej: Azul, rojo, blanco" />
+        </label>
+
+        <label class="form-field form-field-wide">
+          <span>Descripción</span>
+          <input type="text" placeholder="Descripción de la papeleta" />
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Guardar papeleta</button>
+        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="card">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Listado de papeletas</div>
+        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
+      </div>
+
+      <span class="field-tag">Conectado a backend</span>
+    </div>
+
+    <div class="filters-row">
+      <label class="form-field">
+        <span>Buscar</span>
+        <input
+          type="text"
+          placeholder="Buscar por lista, descripción, partido, órgano o departamento"
+          [value]="busqueda"
+          (input)="actualizarBusqueda($any($event.target).value)"
+        />
+      </label>
+
+      <label class="form-field">
+        <span>Elección</span>
+        <select
+          [value]="eleccionSeleccionada"
+          (change)="actualizarEleccion($any($event.target).value)"
+        >
+          <option value="">Todas</option>
+
+          @for (eleccion of elecciones; track eleccion.id_eleccion) {
+            <option [value]="eleccion.id_eleccion">
+              {{ eleccion.descripcion || 'Elección ' + eleccion.id_eleccion }}
+            </option>
+          }
+        </select>
+      </label>
+
+      <button class="btn" (click)="cargarDatos()">Recargar</button>
+    </div>
+
+    @if (cargando) {
+      <div class="empty-state">Cargando papeletas...</div>
+    } @else if (errorCarga) {
+      <div class="empty-state error-state">
+        {{ errorCarga }}
+      </div>
+    } @else if (papeletasFiltradas.length === 0) {
+      <div class="empty-state">No hay papeletas para mostrar.</div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Elección</th>
+              <th>Lista</th>
+              <th>Partido</th>
+              <th>Órgano</th>
+              <th>Departamento</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (papeleta of papeletasFiltradas; track papeleta.id_papeleta) {
+              <tr>
+                <td>{{ papeleta.id_papeleta }}</td>
+                <td>{{ obtenerDescripcionEleccion(papeleta.id_eleccion) }}</td>
+                <td>{{ papeleta.numero_lista || '—' }}</td>
+                <td>{{ obtenerNombrePartido(papeleta.id_partido) }}</td>
+                <td>{{ papeleta.organo_candidatura || '—' }}</td>
+                <td>{{ obtenerNombreDepartamento(papeleta.id_departamento) }}</td>
+                <td>
+                  @if (papeleta.es_lista) {
+                    <span class="badge badge-success">Lista</span>
+                  } @else {
+                    <span class="badge badge-warning">Opción</span>
+                  }
+                </td>
+                <td>{{ papeleta.descripcion || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

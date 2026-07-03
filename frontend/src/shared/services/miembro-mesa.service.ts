@@ -3,15 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-import type { MiembroMesa} from '../types/electoral';
-
+import type { MiembroMesa } from '../types/electoral';
 
 @Injectable({
   providedIn: 'root',
 })
 export class MiembrosMesaService {
   private httpClient = inject(HttpClient);
-  private readonly base = `${environment.apiUrl}/miembro-mesa`;
+  private readonly base = `${environment.apiUrl}/miembro_mesa`;
 
   public async getAll(): Promise<MiembroMesa[]> {
     return await firstValueFrom(this.httpClient.get<MiembroMesa[]>(this.base));
