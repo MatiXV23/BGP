@@ -32,6 +32,7 @@ services:
       # - db:/var/lib/mysql.
       - ./database/00_init.sql:/docker-entrypoint-initdb.d/00_init.sql
       - ./database/01_inserts.sql:/docker-entrypoint-initdb.d/01_inserts.sql
+      - ./database/02_datosExtra.sql:/docker-entrypoint-initdb.d/02_datosExtra.sql
       - ./database/charset.cnf:/etc/mysql/conf.d/charset.cnf
     networks:
       - bgp_net
