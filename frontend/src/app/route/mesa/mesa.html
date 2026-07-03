@@ -1,35 +1,86 @@
 @if (mesaContext.loading() && !mesaContext.loaded()) {
   <div class="content">
-    <div class="empty-state">Cargando datos de la mesa...</div>
+    <div class="card">
+      <div class="empty-state">Cargando datos de la mesa...</div>
+    </div>
+  </div>
+} @else if (mesaContext.error()) {
+  <div class="content">
+    <div class="card">
+      <div class="empty-state error-state">
+        {{ mesaContext.error() }}
+      </div>
+    </div>
   </div>
 } @else if (mesaContext.mesa(); as mesa) {
   <div class="content">
     <div class="mesa-header">
       <div>
-        <div class="section-title">Gestión de mesa</div>
-        <div class="section-sub">Control operativo de la mesa de votación — Circuito {{ mesa.numero_circuito }}</div>
+        <div class="section-title">Mesa de votación</div>
+        <div class="section-sub">
+          Gestión operativa de la mesa actual · Circuito {{ mesa.numero_circuito }}
+        </div>
       </div>
 
-      @if (mesa.estado === 'Cerrada') {
-        <span class="badge badge-danger">Mesa cerrada</span>
-      } @else {
-        <span class="badge badge-success">Mesa abierta</span>
-      }
+      <div class="header-actions">
+        @if (mesa.estado === 'Cerrada') {
+          <span class="badge badge-danger">Mesa cerrada</span>
+        } @else {
+          <span class="badge badge-success">Mesa abierta</span>
+        }
+
+        <button class="btn btn-primary" (click)="recargarMesa()">Recargar</button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Estado</div>
+        <div class="stat-value">{{ mesa.estado }}</div>
+        <div class="stat-detail">{{ mesa.eleccion_tipo }} · {{ mesa.eleccion_fecha }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Habilitados</div>
+        <div class="stat-value">{{ mesa.habilitados }}</div>
+        <div class="stat-detail">Ciudadanos habilitados en el circuito</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Votos emitidos</div>
+        <div class="stat-value">{{ mesa.votos_emitidos }}</div>
+        <div class="stat-detail">{{ participacionPct() }}% de participación</div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="participacionPct()"></div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Votos observados</div>
+        <div class="stat-value">{{ mesa.votos_observados }}</div>
+        <div class="stat-detail">Votos marcados como observados</div>
+      </div>
     </div>
 
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Estado de la mesa</div>
+          <div class="section-title">Estado operativo</div>
           <div class="section-sub">
-            Desde esta sección se puede cerrar la mesa al finalizar la votación.
+            Desde esta sección se controla el cierre definitivo de la mesa
           </div>
         </div>
+
+        <span class="field-tag"> Mesa {{ mesa.id_mesa }} </span>
       </div>
 
       <div class="mesa-actions">
         @if (mainStore.isAdmin()) {
-          <button class="btn btn-primary" [disabled]="mesa.estado === 'Cerrada' || cerrando" (click)="cerrarMesa()">
+          <button
+            class="btn btn-danger"
+            [disabled]="mesa.estado === 'Cerrada' || cerrando"
+            (click)="cerrarMesa()"
+          >
             {{ cerrando ? 'Cerrando...' : 'Cerrar mesa' }}
           </button>
         }
@@ -43,9 +94,15 @@
         }
       </div>
 
-      <div class="mesa-note">
-        Una vez cerrada la mesa, el sistema no permite volver a abrirla.
-      </div>
+      @if (mesa.estado === 'Cerrada') {
+        <div class="mesa-note danger-note">
+          La mesa está cerrada. El sistema ya no permite registrar nuevos votos.
+        </div>
+      } @else {
+        <div class="mesa-note">
+          Una vez cerrada la mesa, el sistema no permite volver a abrirla.
+        </div>
+      }
     </div>
 
     <div class="two-col">
@@ -53,24 +110,51 @@
         <div class="section-header">
           <div>
             <div class="section-title">Datos del circuito</div>
-            <div class="section-sub">{{ mesa.eleccion_tipo }} · {{ mesa.eleccion_fecha }}</div>
+            <div class="section-sub">{{ mesa.establecimiento }} · {{ mesa.departamento }}</div>
           </div>
+
+          @if (mesa.es_accesible) {
+            <span class="badge badge-success">Accesible</span>
+          } @else {
+            <span class="badge badge-neutral">No accesible</span>
+          }
         </div>
 
         <div class="row-item">
-          <span class="row-label">Circuito</span><span class="row-value">{{ mesa.numero_circuito }}</span>
+          <span class="row-label">Circuito</span>
+          <span class="row-value">{{ mesa.numero_circuito }}</span>
         </div>
+
         <div class="row-item">
-          <span class="row-label">Establecimiento</span><span class="row-value">{{ mesa.establecimiento }}</span>
+          <span class="row-label">Establecimiento</span>
+          <span class="row-value">{{ mesa.establecimiento }}</span>
         </div>
+
         <div class="row-item">
-          <span class="row-label">Departamento</span><span class="row-value">{{ mesa.departamento }}</span>
+          <span class="row-label">Tipo de establecimiento</span>
+          <span class="row-value">{{ mesa.tipo_establecimiento }}</span>
         </div>
+
         <div class="row-item">
-          <span class="row-label">Localidad</span><span class="row-value">{{ mesa.localidad }}</span>
+          <span class="row-label">Departamento</span>
+          <span class="row-value">{{ mesa.departamento }}</span>
         </div>
+
         <div class="row-item">
-          <span class="row-label">Habilitados</span><span class="row-value">{{ mesa.habilitados }}</span>
+          <span class="row-label">Zona</span>
+          <span class="row-value">{{ mesa.zona }}</span>
+        </div>
+
+        <div class="row-item">
+          <span class="row-label">Localidad</span>
+          <span class="row-value">
+            {{ mesa.localidad }}{{ mesa.barrio_zona ? ' — ' + mesa.barrio_zona : '' }}
+          </span>
+        </div>
+
+        <div class="row-item">
+          <span class="row-label">Circuitos en el local</span>
+          <span class="row-value">{{ mesa.circuitos_en_establecimiento }}</span>
         </div>
       </div>
 
@@ -78,54 +162,167 @@
         <div class="section-header">
           <div>
             <div class="section-title">Integrantes de mesa</div>
-            <div class="section-sub">Presidente, secretario y vocal</div>
+            <div class="section-sub">Presidente, secretario y vocal asignados</div>
           </div>
+
+          <span class="field-tag">Autoridades</span>
+        </div>
+
+        <div class="person-row">
+          <div class="avatar av-blue">
+            {{ iniciales(mesa.presidente.nombre_completo) }}
+          </div>
+
+          <div class="person-info">
+            <div class="person-name">{{ mesa.presidente.nombre_completo }}</div>
+            <div class="person-sub">CI {{ mesa.presidente.cedula_identidad }}</div>
+          </div>
+
+          <span class="badge badge-accent">Presidente</span>
+        </div>
+
+        <div class="person-row">
+          <div class="avatar av-green">
+            {{ iniciales(mesa.secretario.nombre_completo) }}
+          </div>
+
+          <div class="person-info">
+            <div class="person-name">{{ mesa.secretario.nombre_completo }}</div>
+            <div class="person-sub">CI {{ mesa.secretario.cedula_identidad }}</div>
+          </div>
+
+          <span class="badge badge-neutral">Secretario/a</span>
+        </div>
+
+        <div class="person-row">
+          <div class="avatar av-amber">
+            {{ iniciales(mesa.vocal.nombre_completo) }}
+          </div>
+
+          <div class="person-info">
+            <div class="person-name">{{ mesa.vocal.nombre_completo }}</div>
+            <div class="person-sub">CI {{ mesa.vocal.cedula_identidad }}</div>
+          </div>
+
+          <span class="badge badge-neutral">Vocal</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Resumen de votación</div>
+            <div class="section-sub">Totales registrados en esta mesa</div>
+          </div>
+
+          <span class="field-tag">Datos reales</span>
         </div>
 
         <div class="row-item">
-          <span class="row-label">Presidente</span><span class="row-value">{{ mesa.presidente.nombre_completo }}</span>
+          <span class="row-label">Votos emitidos</span>
+          <span class="row-value">{{ mesa.votos_emitidos }}</span>
         </div>
+
         <div class="row-item">
-          <span class="row-label">Secretario/a</span><span class="row-value">{{ mesa.secretario.nombre_completo }}</span>
+          <span class="row-label">Votos válidos</span>
+          <span class="row-value">{{ mesa.votos_validos }}</span>
         </div>
+
         <div class="row-item">
-          <span class="row-label">Vocal</span><span class="row-value">{{ mesa.vocal.nombre_completo }}</span>
+          <span class="row-label">Votos en blanco</span>
+          <span class="row-value">{{ mesa.votos_blancos }}</span>
         </div>
+
+        <div class="row-item">
+          <span class="row-label">Votos anulados</span>
+          <span class="row-value">{{ mesa.votos_anulados }}</span>
+        </div>
+
+        <div class="row-item">
+          <span class="row-label">Votos observados</span>
+          <span class="row-value">{{ mesa.votos_observados }}</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Personal de seguridad</div>
+            <div class="section-sub">Agentes asignados al establecimiento</div>
+          </div>
+
+          <span class="field-tag">{{ mesa.establecimiento }}</span>
+        </div>
+
+        @if (mesa.seguridad.length === 0) {
+          <div class="empty-state">
+            No hay agentes asignados a este establecimiento para esta elección.
+          </div>
+        } @else {
+          @for (agente of mesa.seguridad; track agente.cedula_identidad) {
+            <div class="person-row">
+              <div class="avatar av-neu">
+                {{ iniciales(agente.nombre_completo) }}
+              </div>
+
+              <div class="person-info">
+                <div class="person-name">{{ agente.nombre_completo }}</div>
+                <div class="person-sub">CI {{ agente.cedula_identidad }}</div>
+                <div class="person-sub">{{ agente.comisaria }}</div>
+              </div>
+            </div>
+          }
+        }
       </div>
     </div>
 
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Resumen de votación</div>
-          <div class="section-sub">Votos emitidos, observados, anulados y en blanco de esta mesa.</div>
+          <div class="section-title">Papeletas de la elección</div>
+          <div class="section-sub">Listas u opciones disponibles para esta mesa</div>
         </div>
+
+        <span class="field-tag"> {{ mesa.papeletas.length }} papeletas </span>
       </div>
 
-      <div class="row-item">
-        <span class="row-label">Votos emitidos</span><span class="row-value">{{ mesa.votos_emitidos }}</span>
-      </div>
-      <div class="row-item">
-        <span class="row-label">Votos válidos</span><span class="row-value">{{ mesa.votos_validos }}</span>
-      </div>
-      <div class="row-item">
-        <span class="row-label">Votos en blanco</span><span class="row-value">{{ mesa.votos_blancos }}</span>
-      </div>
-      <div class="row-item">
-        <span class="row-label">Votos anulados</span><span class="row-value">{{ mesa.votos_anulados }}</span>
-      </div>
-      <div class="row-item">
-        <span class="row-label">Votos observados</span><span class="row-value">{{ mesa.votos_observados }}</span>
-      </div>
+      @if (mesa.papeletas.length === 0) {
+        <div class="empty-state">No hay papeletas cargadas para esta elección.</div>
+      } @else {
+        @for (papeleta of mesa.papeletas; track papeleta.id_papeleta) {
+          <div class="lista-row">
+            <div class="lista-main">
+              <div class="lista-num">
+                {{ papeleta.numero_lista ?? '—' }}
+              </div>
+
+              <div>
+                <div class="lista-title">
+                  {{ papeleta.descripcion || 'Papeleta sin descripción' }}
+                </div>
+
+                <div class="lista-sub">
+                  {{ papeleta.partido || 'Sin partido asociado' }}
+                  {{ papeleta.organo_candidatura ? ' · ' + papeleta.organo_candidatura : '' }}
+                </div>
+              </div>
+            </div>
+
+            <div class="lista-result">
+              <span class="badge badge-neutral"> {{ papeleta.votos }} votos </span>
+            </div>
+          </div>
+        }
+      }
     </div>
   </div>
 } @else {
   <div class="content">
     <div class="card">
       <div class="section-title">No tenés una mesa asignada</div>
-      <div class="section-sub" style="margin-top: 4px">
-        Tu usuario no integra la autoridad (presidente, secretario o vocal) de ninguna mesa de votación.
-      </div>
+      <div class="section-sub">Tu usuario no integra la autoridad de ninguna mesa de votación.</div>
     </div>
   </div>
 }

@@ -5,43 +5,88 @@
       <div class="section-sub">Gestión de personas habilitadas dentro del sistema electoral</div>
     </div>
 
-    <button class="btn btn-primary" (click)="alternarFormulario()">Nuevo ciudadano</button>
+    <button class="btn btn-primary" (click)="alternarFormulario()">
+      {{ mostrarFormulario ? 'Cerrar formulario' : 'Nuevo ciudadano' }}
+    </button>
   </div>
+
+  @if (mensajeExito) {
+    <div class="card">
+      <div class="empty-state success-state">
+        {{ mensajeExito }}
+      </div>
+    </div>
+  }
 
   @if (mostrarFormulario) {
     <div class="card">
       <div class="section-header">
         <div>
           <div class="section-title">Alta de ciudadano</div>
-          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
+          <div class="section-sub">
+            Registro de un nuevo ciudadano habilitado en la base de datos
+          </div>
         </div>
+
+        <span class="field-tag">POST /ciudadano</span>
       </div>
+
+      @if (errorFormulario) {
+        <div class="empty-state error-state">
+          {{ errorFormulario }}
+        </div>
+      }
 
       <div class="form-grid">
         <label class="form-field">
           <span>Cédula de identidad</span>
-          <input type="text" placeholder="Ej: 12345678" />
+          <input
+            type="text"
+            maxlength="8"
+            name="cedula_identidad"
+            placeholder="Ej: 12345678"
+            [(ngModel)]="nuevoCiudadano.cedula_identidad"
+          />
         </label>
 
         <label class="form-field">
           <span>Credencial cívica</span>
-          <input type="text" placeholder="Ej: ABA1234567" />
+          <input
+            type="text"
+            maxlength="10"
+            name="credencial_civica"
+            placeholder="Ej: ABA1234567"
+            [(ngModel)]="nuevoCiudadano.credencial_civica"
+          />
         </label>
 
         <label class="form-field form-field-wide">
           <span>Nombre completo</span>
-          <input type="text" placeholder="Nombre y apellido" />
+          <input
+            type="text"
+            maxlength="150"
+            name="nombre_completo"
+            placeholder="Nombre y apellido"
+            [(ngModel)]="nuevoCiudadano.nombre_completo"
+          />
         </label>
 
         <label class="form-field">
           <span>Fecha de nacimiento</span>
-          <input type="date" />
+          <input
+            type="date"
+            name="fecha_nacimiento"
+            [(ngModel)]="nuevoCiudadano.fecha_nacimiento"
+          />
         </label>
       </div>
 
       <div class="form-actions">
-        <button class="btn btn-primary">Guardar ciudadano</button>
-        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+        <button class="btn btn-primary" [disabled]="guardando" (click)="guardarCiudadano()">
+          {{ guardando ? 'Guardando...' : 'Guardar ciudadano' }}
+        </button>
+
+        <button class="btn" [disabled]="guardando" (click)="alternarFormulario()">Cancelar</button>
       </div>
     </div>
   }
@@ -50,7 +95,7 @@
     <div class="section-header">
       <div>
         <div class="section-title">Listado de ciudadanos</div>
-        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
+        <div class="section-sub">Ciudadanos cargados actualmente en la base de datos</div>
       </div>
 
       <span class="field-tag">Conectado a backend</span>
@@ -61,9 +106,10 @@
         <span>Buscar</span>
         <input
           type="text"
-          placeholder="Buscar por cédula, credencial o nombre"
-          [value]="busqueda"
-          (input)="actualizarBusqueda($any($event.target).value)"
+          placeholder="Buscar por CI, credencial o nombre"
+          name="busqueda"
+          [(ngModel)]="busqueda"
+          (ngModelChange)="actualizarBusqueda($event)"
         />
       </label>
 
