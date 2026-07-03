@@ -154,6 +154,56 @@
   font-size: 13px;
 }
 
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+
+.row-item:last-child {
+  border-bottom: none;
+}
+
+.row-label {
+  color: var(--text2);
+}
+
+.row-value {
+  font-weight: 500;
+  color: var(--text1);
+  white-space: nowrap;
+}
+
+.tab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.tab {
+  padding: 7px 14px;
+  font-size: 13px;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -0.5px;
+}
+
+.tab.active {
+  color: var(--acc);
+  border-bottom-color: var(--acc);
+}
+
 @media (max-width: 900px) {
   .elecciones-header {
     align-items: flex-start;
@@ -168,6 +218,10 @@
 
   .form-field-wide {
     grid-column: span 1;
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
   }
 }
 .table-wrapper {

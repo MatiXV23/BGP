@@ -81,6 +81,53 @@ export type Eleccion = {
 
 export type EleccionPost = Omit<Eleccion, 'id_eleccion'>;
 
+// ─── Resultados de elección (vistas de 00_init.sql) ─────────────────────────
+
+export type ResultadoPapeleta = {
+  id_eleccion: number;
+  fecha: string;
+  tipo_eleccion: string;
+  id_papeleta: number;
+  numero_lista?: number;
+  papeleta?: string;
+  partido?: string;
+  votos_emitidos: number;
+  votos_validos: number;
+  votos_anulados: number;
+  votos_blancos: number;
+  votos_observados: number;
+};
+
+export type ResultadoDepartamento = {
+  id_eleccion: number;
+  fecha: string;
+  id_departamento: number;
+  departamento: string;
+  votos_emitidos: number;
+  votos_validos: number;
+  votos_anulados: number;
+  votos_blancos: number;
+  votos_observados: number;
+};
+
+export type ResultadoPartido = {
+  id_eleccion: number;
+  fecha: string;
+  id_partido: number;
+  partido: string;
+  votos_emitidos: number;
+  votos_validos: number;
+  votos_anulados: number;
+  votos_blancos: number;
+  votos_observados: number;
+};
+
+export type ResultadosEleccion = {
+  porPapeleta: ResultadoPapeleta[];
+  porDepartamento: ResultadoDepartamento[];
+  porPartido: ResultadoPartido[];
+};
+
 // ─── Organismo del Estado ────────────────────────────────────────────────────
 
 export type OrganismoEstado = {

@@ -27,7 +27,13 @@
       Mesa de votación
     </a>
 
-    <a class="nav-item" routerLink="/resultados" routerLinkActive="active">
+    <a
+      class="nav-item"
+      [class.disabled]="mesaContext.mesa()?.estado === 'Abierta'"
+      routerLink="/resultados"
+      routerLinkActive="active"
+      [title]="mesaContext.mesa()?.estado === 'Abierta' ? 'Los resultados se habilitan cuando la mesa cierra' : ''"
+    >
       <i class="ti ti-chart-bar" aria-hidden="true"></i>
       Resultados
     </a>
@@ -113,7 +119,9 @@
           }
         }
 
-        <div class="avatar av-blue">{{ iniciales() }}</div>
+        <button class="avatar av-blue avatar-btn" (click)="togglePerfil()" title="Ver mi perfil">
+          {{ iniciales() }}
+        </button>
         <button class="btn" (click)="logOut()" title="Cerrar sesión">
           <i class="ti ti-logout" aria-hidden="true"></i>
         </button>
@@ -122,6 +130,57 @@
 
     <router-outlet></router-outlet>
   </div>
+
+  @if (mostrarPerfil()) {
+    <div class="modal-backdrop" (click)="togglePerfil()">
+      <div class="modal-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <div class="section-title">Mi perfil</div>
+          <button class="modal-close" (click)="togglePerfil()" aria-label="Cerrar">
+            <i class="ti ti-x" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        @if (mainStore.user(); as user) {
+          <div class="person-row">
+            <div class="avatar av-blue">{{ iniciales() }}</div>
+            <div>
+              <div class="person-name">{{ user.nombre_completo ?? 'Usuario' }}</div>
+              <div class="person-sub">CI {{ user.cedula_identidad }}</div>
+            </div>
+          </div>
+
+          <div class="row-item">
+            <span class="row-label">Credencial cívica</span>
+            <span class="row-value">{{ user.credencial_civica ?? '—' }}</span>
+          </div>
+
+          @if (mesaContext.mesa(); as mesa) {
+            <div class="row-item">
+              <span class="row-label">Circuito en el que vota</span>
+              <span class="row-value">{{ mesa.numero_circuito }}</span>
+            </div>
+            <div class="row-item">
+              <span class="row-label">Establecimiento</span>
+              <span class="row-value">{{ mesa.establecimiento }}</span>
+            </div>
+          }
+
+          <div class="row-item">
+            <span class="row-label">Rol</span>
+            <span class="row-value" style="display: flex; gap: 6px">
+              @if (user.is_admin) {
+                <span class="badge badge-accent">Administrador</span>
+              }
+              @if (rolEnMesa()) {
+                <span class="badge badge-neutral">{{ rolEnMesa() }}</span>
+              }
+            </span>
+          </div>
+        }
+      </div>
+    </div>
+  }
 } @else {
   <router-outlet></router-outlet>
 }

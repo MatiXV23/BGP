@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../environments/environment';
-import type { Eleccion, EleccionPost } from '../types/electoral';
+import type { Eleccion, EleccionPost, ResultadosEleccion } from '../types/electoral';
 @Injectable({
   providedIn: 'root',
 })
@@ -14,6 +14,14 @@ export class EleccionService {
   public async getAll(): Promise<Eleccion[]> {
     return await firstValueFrom(
       this.httpClient.get<Eleccion[]>(this.base)
+    );
+  }
+
+  // Resultados por papeleta, por departamento y por partido, calculados desde las vistas
+  // v_resultados_eleccion, v_votos_por_departamento y v_votos_por_partido (00_init.sql).
+  public async getResultados(id: number): Promise<ResultadosEleccion> {
+    return await firstValueFrom(
+      this.httpClient.get<ResultadosEleccion>(`${this.base}/${id}/resultados`)
     );
   }
 

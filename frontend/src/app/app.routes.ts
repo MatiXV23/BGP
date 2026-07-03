@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { isNotLoggedGuard } from '../core/guards/is-not-logged-guard';
 import { isLoggedGuard } from '../core/guards/is-logged-guard';
+import { canSeeResultsGuard } from '../core/guards/can-see-results-guard';
 
 export const routes: Routes = [
   {
@@ -25,7 +26,7 @@ export const routes: Routes = [
   },
   {
     path: 'resultados',
-    canActivate: [isLoggedGuard],
+    canActivate: [isLoggedGuard, canSeeResultsGuard],
     loadComponent: () => import('./route/resultados/resultados').then((m) => m.Resultados),
   },
   {

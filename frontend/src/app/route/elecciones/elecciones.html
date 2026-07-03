@@ -2,211 +2,120 @@
   <div class="elecciones-header">
     <div>
       <div class="section-title">Elecciones</div>
-      <div class="section-sub">Administración de instancias electorales del sistema</div>
+      <div class="section-sub">
+        Resultados por elección, calculados desde las vistas de la base de datos
+      </div>
     </div>
-
-    <button class="btn btn-primary" (click)="alternarFormulario()">Nueva elección</button>
   </div>
 
   <div class="card">
     <div class="section-header">
       <div>
-        <div class="section-title">Elección de referencia</div>
-        <div class="section-sub">
-          Se muestra la elección más reciente cargada en la base de datos
-        </div>
-      </div>
-
-      <span class="field-tag">Conectado a backend</span>
-    </div>
-
-    @if (obtenerEleccionPrincipal()) {
-      <div class="row-item">
-        <span class="row-label">ID</span>
-        <span class="row-value">{{ obtenerEleccionPrincipal()?.id_eleccion }}</span>
-      </div>
-
-      <div class="row-item">
-        <span class="row-label">Tipo</span>
-        <span class="row-value">
-          {{ obtenerNombreTipo(obtenerEleccionPrincipal()!.id_tipo) }}
-        </span>
-      </div>
-
-      <div class="row-item">
-        <span class="row-label">Fecha</span>
-        <span class="row-value">{{ obtenerEleccionPrincipal()?.fecha }}</span>
-      </div>
-
-      <div class="row-item">
-        <span class="row-label">Descripción</span>
-        <span class="row-value">
-          {{ obtenerEleccionPrincipal()?.descripcion || 'Sin descripción' }}
-        </span>
-      </div>
-    } @else {
-      <div class="empty-state">No hay elecciones cargadas.</div>
-    }
-  </div>
-
-  @if (mostrarFormulario) {
-    <div class="card">
-      <div class="section-header">
-        <div>
-          <div class="section-title">Alta de elección</div>
-          <div class="section-sub">Formulario preparado para una futura alta desde el frontend</div>
-        </div>
-      </div>
-
-      <div class="form-grid">
-        <label class="form-field">
-          <span>Tipo de elección</span>
-          <select>
-            <option value="">Seleccionar tipo</option>
-
-            @for (tipo of tiposEleccion; track tipo.id_tipo) {
-              <option [value]="tipo.id_tipo">
-                {{ tipo.nombre }}
-              </option>
-            }
-          </select>
-        </label>
-
-        <label class="form-field">
-          <span>Fecha</span>
-          <input type="date" />
-        </label>
-
-        <label class="form-field form-field-wide">
-          <span>Descripción</span>
-          <input type="text" placeholder="Ej: Elecciones municipales 2025" />
-        </label>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn btn-primary">Guardar elección</button>
-        <button class="btn" (click)="alternarFormulario()">Cancelar</button>
+        <div class="section-title">Elecciones</div>
+        <div class="section-sub">Elegí una elección para ver sus resultados</div>
       </div>
     </div>
-  }
 
-  <div class="card">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Listado de elecciones</div>
-        <div class="section-sub">Datos cargados desde el backend y la base de datos</div>
-      </div>
-
-      <span class="field-tag">Conectado a backend</span>
-    </div>
-
-    <div class="filters-row">
-      <label class="form-field">
-        <span>Buscar</span>
-        <input
-          type="text"
-          placeholder="Buscar por ID, fecha, descripción o tipo"
-          [value]="busqueda"
-          (input)="actualizarBusqueda($any($event.target).value)"
-        />
-      </label>
-
-      <label class="form-field">
-        <span>Tipo</span>
-        <select [value]="tipoSeleccionado" (change)="actualizarTipo($any($event.target).value)">
-          <option value="">Todos</option>
-
-          @for (tipo of tiposEleccion; track tipo.id_tipo) {
-            <option [value]="tipo.id_tipo">
-              {{ tipo.nombre }}
-            </option>
-          }
-        </select>
-      </label>
-
-      <button class="btn" (click)="cargarDatos()">Recargar</button>
-    </div>
-
-    @if (cargando) {
+    @if (cargandoElecciones()) {
       <div class="empty-state">Cargando elecciones...</div>
-    } @else if (errorCarga) {
-      <div class="empty-state error-state">
-        {{ errorCarga }}
-      </div>
-    } @else if (eleccionesFiltradas.length === 0) {
-      <div class="empty-state">No hay elecciones para mostrar.</div>
+    } @else if (errorElecciones()) {
+      <div class="empty-state">{{ errorElecciones() }}</div>
+    } @else if (elecciones().length === 0) {
+      <div class="empty-state">No hay elecciones registradas.</div>
     } @else {
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Tipo</th>
-              <th>Fecha</th>
-              <th>Descripción</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            @for (eleccion of eleccionesFiltradas; track eleccion.id_eleccion) {
-              <tr>
-                <td>{{ eleccion.id_eleccion }}</td>
-                <td>{{ obtenerNombreTipo(eleccion.id_tipo) }}</td>
-                <td>{{ eleccion.fecha }}</td>
-                <td>{{ eleccion.descripcion || '—' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+      <div class="tab-bar">
+        @for (eleccion of elecciones(); track eleccion.id_eleccion) {
+          <div
+            class="tab"
+            [class.active]="eleccionSeleccionada()?.id_eleccion === eleccion.id_eleccion"
+            (click)="seleccionarEleccion(eleccion)"
+          >
+            {{ etiquetaEleccion(eleccion) }}
+          </div>
+        }
       </div>
     }
   </div>
 
-  <div class="two-col">
+  @if (cargandoResultados()) {
+    <div class="card">
+      <div class="empty-state">Cargando resultados...</div>
+    </div>
+  } @else if (errorResultados()) {
+    <div class="card">
+      <div class="empty-state">{{ errorResultados() }}</div>
+    </div>
+  } @else if (resultados(); as r) {
     <div class="card">
       <div class="section-header">
         <div>
-          <div class="section-title">Tipos de elección</div>
-          <div class="section-sub">Clasificación de las elecciones admitidas por el modelo</div>
+          <div class="section-title">Resultados por papeleta</div>
+          <div class="section-sub">Vista v_resultados_eleccion</div>
         </div>
       </div>
 
-      @if (tiposEleccion.length === 0) {
-        <div class="empty-state">No hay tipos de elección cargados.</div>
+      @if (r.porPapeleta.length === 0) {
+        <div class="empty-state">No hay papeletas cargadas para esta elección.</div>
       } @else {
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Tipo</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              @for (tipo of tiposEleccion; track tipo.id_tipo) {
-                <tr>
-                  <td>{{ tipo.id_tipo }}</td>
-                  <td>{{ tipo.nombre }}</td>
-                </tr>
+        @for (p of r.porPapeleta; track p.id_papeleta) {
+          <div class="row-item">
+            <span class="row-label">{{ etiquetaPapeleta(p) }}</span>
+            <span class="row-value">
+              {{ p.votos_emitidos }} votos
+              @if (p.votos_observados > 0) {
+                <span class="badge badge-warning" style="margin-left: 6px; font-size: 11px"
+                  >{{ p.votos_observados }} obs.</span
+                >
               }
-            </tbody>
-          </table>
-        </div>
+            </span>
+          </div>
+        }
       }
     </div>
 
-    <div class="card">
-      <div class="section-header">
-        <div>
-          <div class="section-title">Papeletas asociadas</div>
-          <div class="section-sub">
-            Cada elección podrá tener listas, fórmulas u opciones de votación
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Resultados por departamento</div>
+            <div class="section-sub">Vista v_votos_por_departamento</div>
           </div>
         </div>
+
+        @if (r.porDepartamento.length === 0) {
+          <div class="empty-state">Todavía no hay votos registrados en ningún departamento.</div>
+        } @else {
+          @for (d of r.porDepartamento; track d.id_departamento) {
+            <div class="row-item">
+              <span class="row-label">{{ d.departamento }}</span>
+              <span class="row-value"
+                >{{ d.votos_emitidos }} votos ({{ d.votos_validos }} válidos,
+                {{ d.votos_blancos }} en blanco, {{ d.votos_anulados }} anulados)</span
+              >
+            </div>
+          }
+        }
       </div>
 
-      <div class="empty-state">Esta sección se conectará más adelante con la tabla papeleta.</div>
+      <div class="card">
+        <div class="section-header">
+          <div>
+            <div class="section-title">Resultados por partido</div>
+            <div class="section-sub">Vista v_votos_por_partido</div>
+          </div>
+        </div>
+
+        @if (r.porPartido.length === 0) {
+          <div class="empty-state">Todavía no hay votos registrados para ningún partido.</div>
+        } @else {
+          @for (p of r.porPartido; track p.id_partido) {
+            <div class="row-item">
+              <span class="row-label">{{ p.partido }}</span>
+              <span class="row-value">{{ p.votos_emitidos }} votos</span>
+            </div>
+          }
+        }
+      </div>
     </div>
-  </div>
+  }
 </div>

@@ -126,7 +126,10 @@ export class MesaDB extends BaseDBRepository<Mesa> {
   }
 
   // Mesa donde el ciudadano logeado integra la autoridad (presidente, secretario o vocal).
-  // Si integra varias (una por elección), prioriza la que esté abierta y luego la más reciente.
+  // Si integra varias (una por elección), prioriza siempre la de la elección más reciente;
+  // si tiene más de una mesa en esa misma elección, ahí sí desempata por la que esté abierta.
+  // (Priorizar "abierta" por sobre "más reciente" hacía que, al cerrar la mesa de la elección
+  // actual, la app saltara a mostrar una mesa de una elección vieja que seguía abierta.)
   private async getMesaAutoridad(cedula_identidad: string): Promise<RowDataPacket> {
     const [mesaRows] = await this.pool.query<RowDataPacket[]>(
       `SELECT m.id_mesa, m.id_circuito, m.id_eleccion,
@@ -134,7 +137,7 @@ export class MesaDB extends BaseDBRepository<Mesa> {
        FROM mesa m
        JOIN eleccion e ON e.id_eleccion = m.id_eleccion
        WHERE ? IN (m.ci_presidente, m.ci_secretario, m.ci_vocal)
-       ORDER BY (m.estado = 'Abierta') DESC, e.fecha DESC
+       ORDER BY e.fecha DESC, (m.estado = 'Abierta') DESC
        LIMIT 1`,
       [cedula_identidad]
     );
@@ -144,7 +147,8 @@ export class MesaDB extends BaseDBRepository<Mesa> {
   }
 
   // Mesa del circuito donde el ciudadano logeado está habilitado para votar (padrón).
-  // Es independiente de si integra o no la autoridad de esa mesa.
+  // Es independiente de si integra o no la autoridad de esa mesa. Mismo criterio de
+  // desempate que getMesaAutoridad: elección más reciente primero.
   private async getMesaDeMiCircuito(cedula_identidad: string): Promise<RowDataPacket> {
     const [mesaRows] = await this.pool.query<RowDataPacket[]>(
       `SELECT m.id_mesa, m.id_circuito, m.id_eleccion,
@@ -154,7 +158,7 @@ export class MesaDB extends BaseDBRepository<Mesa> {
        JOIN mesa m                 ON m.id_circuito = cc.id_circuito
        JOIN eleccion e             ON e.id_eleccion = m.id_eleccion
        WHERE c.cedula_identidad = ?
-       ORDER BY (m.estado = 'Abierta') DESC, e.fecha DESC
+       ORDER BY e.fecha DESC, (m.estado = 'Abierta') DESC
        LIMIT 1`,
       [cedula_identidad]
     );
